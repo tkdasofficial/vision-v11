@@ -1,5 +1,10 @@
 # Roadmap — Memory, Output Control, Artifacts & Activity Tracking
 
+## Current request — Upgrade story scripts and generation pipelines
+- [ ] Strengthen narrative planning, scene execution and continuity validation in the existing story paths without changing models.
+- [ ] Add regression tests for discovered failures and verify runtime orchestration.
+- [ ] Record validation evidence and any live-generation or activation blockers; do not invent new quality scores.
+
 ## Current request — GitHub runtime provider selection
 - [x] Switched runtime/story.py to NVIDIA nvidia/nemotron-3-super-120b-a12b; retained Groq openai/gpt-oss-120b fallback and verified both GitHub-secret names. Removed optional cap only for the upgraded primary. Runtime repository updated through GitHub API; no Worker deployment or preview URL change.
 - [x] 22 runtime regressions passed; GitHub runtime-tests succeeded. Signed-in exact ten-scene request completed in 1123s; GitHub run 39119335115 succeeded. Chat c029bdf4-fbee-4395-a62d-2c72cb60d63c restored after closing/reopening; story.md downloaded twice (155302 bytes, blueprint + exactly scenes 1–10, all ten sections each, Devanagari present in each scene, no Devanagari in visual prompts).
