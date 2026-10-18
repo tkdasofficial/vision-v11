@@ -13,7 +13,7 @@ type D1Database = { prepare(sql: string): { bind(...v: unknown[]): { first<T = a
 export interface RuntimeEnv { DB: D1Database }
 
 const REPO = "tkdasofficial/vision-runtime";
-const WORKFLOW_REF = `${REPO}/.github/workflows/run-job.yml@refs/heads/main`;
+const WORKFLOW_REFS = new Set(["terminal.yml", "story.yml"].map((f) => `${REPO}/.github/workflows/${f}@refs/heads/main`));
 const ISSUER = "https://token.actions.githubusercontent.com";
 const AUDIENCE = "vision-runtime-relay";
 const SESSION_TTL_MS = 40 * 60 * 1000;
@@ -51,7 +51,7 @@ export async function verifyGithubOidc(token: string): Promise<{ runId: string }
   if (!(await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, fromB64u(s), enc.encode(`${h}.${p}`)))) return null;
   const t = Date.now() / 1000;
   if (claims.iss !== ISSUER || claims.aud !== AUDIENCE || !(claims.exp > t) || claims.nbf > t + 60) return null;
-  if (claims.repository !== REPO || claims.job_workflow_ref !== WORKFLOW_REF || claims.ref !== "refs/heads/main") return null;
+  if (claims.repository !== REPO || !WORKFLOW_REFS.has(claims.job_workflow_ref) || claims.ref !== "refs/heads/main") return null;
   if (claims.event_name !== "workflow_dispatch" || !/^\d+$/.test(String(claims.run_id))) return null;
   return { runId: String(claims.run_id) };
 }
