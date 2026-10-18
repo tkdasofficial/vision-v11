@@ -27,6 +27,7 @@ function ArtifactButton({ id, name, size }: { id: string; name: string; size?: s
   );
 }
 import CodeBlock from "@/components/chat/code";
+import MarkdownReply from "@/components/chat/markdown-reply";
 import { looksLikeCode } from "@/components/chat/highlight";
 
 const md = { pre: ({ children }: any) => <>{children}</>, code: ({ children, className, node }: any) => {
@@ -78,6 +79,14 @@ export default function JobCard({ job: given, onRetry, compact }: { job: JobView
   const showContents = canShowJobContents(job);
   if (job.type === "long_context" && (job.status === "completed" || job.status === "completed_with_warnings") && job.artifacts.length) {
     return <div className="space-y-3">{statusLine}<div className="flex flex-wrap gap-2">{job.artifacts.map((a) => <ArtifactButton key={a.id} id={a.id} name={a.name} size={fmt(a.size)} />)}</div>{showContents && r.content && <CleanText text={r.content} />}</div>;
+  }
+  // Story / prompt series: the reply IS the content — blueprint, story and every prompt as its own copyable Markdown block.
+  if (job.type === "runtime_task" && (r.operation === "story_generate" || r.operation === "prompt_generate") && (job.status === "completed" || job.status === "completed_with_warnings")) {
+    return <div className="space-y-3">
+      {statusLine}
+      {r.content && <MarkdownReply>{r.content}</MarkdownReply>}
+      {job.artifacts.length > 0 && <div className="flex flex-wrap gap-2">{job.artifacts.map((a) => <ArtifactButton key={a.id} id={a.id} name={a.name} size={fmt(a.size)} />)}</div>}
+    </div>;
   }
   // File deliveries never expose their contents unless the request opted in.
   if (job.type === "code_export" && (job.status === "completed" || job.status === "completed_with_warnings")) {
