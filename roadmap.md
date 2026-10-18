@@ -169,3 +169,5 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [x] Fixed login blocker: security hash key now reads Worker secrets via getSecret with SIGNING_KEY fallback ("Security is not configured" gone; password step verified).
 - [x] Worker deployed: 960630d3-beb1-4635-a2dd-6524aadeda51.
 - [x] End-to-end completed with updated primary on 2026-10-18: Worked for 1123s, saved account-owned story.md, reopened chat and working download; no full PRD-compliance claim.
+- [x] Prompt worker: Nemotron 3 Super only, paced 40 req/min, 4 concurrent (Groq only on outage)
+- [ ] Prompt series: strict independent consistency score ≥90% (currently 55–65%) — waiting on user decision about writer model
