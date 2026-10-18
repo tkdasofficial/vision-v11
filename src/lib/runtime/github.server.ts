@@ -21,11 +21,12 @@ async function gh(path: string, init: RequestInit = {}, tries = 3): Promise<Resp
 }
 
 /** Dispatches one job. Returns the run id when GitHub provides it. */
-export async function dispatchRun(jobId: string, operation: RuntimeOpId): Promise<string | null> {
-  const story = operation === "story_generate";
-  const workflow = story ? "story.yml" : "terminal.yml";
-  const inputs = story ? { job_id: jobId } : { job_id: jobId, operation };
-  const res = await gh(`/actions/workflows/${workflow}/dispatches`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ref: "main", inputs, return_run_details: true }) }, 2);
+export async function dispatchRun(jobId: string, operation: RuntimeOpId, source?: unknown, fileName?: unknown): Promise<string | null> {
+  const { pickWorkflow } = await import("./workflows");
+  const workflow = pickWorkflow(operation, source, fileName);
+  if (!workflow) throw new GithubError("This file type is not handled by the background runtime.", 400);
+  const inputs = operation === "story_generate" ? { job_id: jobId } : { job_id: jobId, operation };
+  const res = await gh(`/actions/workflows/${workflow}.yml/dispatches`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ref: "main", inputs, return_run_details: true }) }, 2);
   if (res.status === 200 || res.status === 204) {
     const body: any = res.status === 200 ? await res.json().catch(() => null) : null;
     return body?.workflow_run_id ? String(body.workflow_run_id) : null;

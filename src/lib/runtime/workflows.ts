@@ -12,7 +12,7 @@ export const WORKFLOWS: Record<string, Workflow> = {
   story: { worker: "documents", ops: ["story_generate"] },
   tex: { worker: "documents", ops: ["render", CK], sources: ["tex"] },
   spreadsheets: { worker: "spreadsheets", ops: ["office_convert", CK], sources: ["xls", "xlsx", "ods", "csv", "tsv"] },
-  data: { worker: "data", ops: ["data_convert", CK], sources: ["parquet", "avro", "json", "jsonl", "xml", "sql"] },
+  data: { worker: "data", ops: ["data_convert", CK], sources: ["parquet", "avro", "csv", "json", "jsonl", "xml", "sql"] },
   sqlite: { worker: "data", ops: ["data_convert", CK], sources: ["sqlite", "db"] },
   presentations: { worker: "presentations", ops: ["office_convert", CK], sources: ["ppt", "pptx", "odp"] },
   code: { worker: "code", ops: [CK], sources: ["css", "js", "jsx", "ts", "tsx", "mjs", "cjs", "py", "java", "c", "cpp", "h", "hpp", "cs", "go", "rs", "php", "rb", "swift", "kt", "kts", "sh", "bat", "ps1", "ipynb"] },

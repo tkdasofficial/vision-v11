@@ -57,7 +57,7 @@ export async function startRuntimeJob(job: JobRun, input: RuntimeInput): Promise
   await job.step("queued", "Sending to the background runtime");
   const { dispatchRun } = await import("./github.server");
   try {
-    const runId = await dispatchRun(job.id, op.id);
+    const runId = await dispatchRun(job.id, op.id, params.source, noInput ? null : input.fileName);
     if (runId) await d1("UPDATE runtime_jobs SET run_id = COALESCE(run_id, ?) WHERE job_id = ?", [runId, job.id]);
   } catch (e) {
     await d1("UPDATE runtime_jobs SET status = 'failed', error = ?, updated_at = ? WHERE job_id = ?", [safeError(e), now(), job.id]);
