@@ -1,9 +1,9 @@
 # Roadmap — Memory, Output Control, Artifacts & Activity Tracking
 
 ## Current request — Upgrade story scripts and generation pipelines
-- [ ] Strengthen narrative planning, scene execution and continuity validation in the existing story paths without changing models.
-- [ ] Add regression tests for discovered failures and verify runtime orchestration.
-- [ ] Record validation evidence and any live-generation or activation blockers; do not invent new quality scores.
+- [x] Strengthened conversation canon, full-outline scene context, nonempty transition evidence, blocking review failures and two-scene continuity checks; GitHub runtime adds causal contracts, validated persistent story state, bounded scene repair, original-count rejection and final audit. Models unchanged.
+- [x] App regression suite: 1,487 passed, one skipped; runtime story/operations: 31 passed. Updated vision-runtime main at 836b2477b1dfa9e9385cc6489de50a75a9e21a29; GitHub verification pending at run 39132284655.
+- [x] Evidence/limits documented in docs/story-consistency.md. No fresh signed-in generation or measured quality scores; Deep local server changes still await authorized Cloudflare activation. Runtime checkpoints remain local to a runner (not cross-run durable), workflow ref remains main, one combined story.md delivery and existing routing retained.
 
 ## Current request — GitHub runtime provider selection
 - [x] Switched runtime/story.py to NVIDIA nvidia/nemotron-3-super-120b-a12b; retained Groq openai/gpt-oss-120b fallback and verified both GitHub-secret names. Removed optional cap only for the upgraded primary. Runtime repository updated through GitHub API; no Worker deployment or preview URL change.
