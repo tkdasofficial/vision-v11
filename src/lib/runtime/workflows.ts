@@ -8,7 +8,7 @@ export type Workflow = { worker: string; ops: RuntimeOpId[]; sources?: string[] 
 
 const CK: RuntimeOpId = "checksum";
 export const WORKFLOWS: Record<string, Workflow> = {
-  documents: { worker: "documents", ops: ["office_convert", "render", "story_generate", CK], sources: ["doc", "docx", "odt", "rtf", "txt", "html", "md", "pdf", "tex"] },
+  documents: { worker: "documents", ops: ["office_convert", "render", CK], sources: ["doc", "docx", "odt", "rtf", "txt", "html", "md", "pdf", "tex"] },
   spreadsheets: { worker: "spreadsheets", ops: ["office_convert", CK], sources: ["xls", "xlsx", "ods", "csv", "tsv"] },
   data: { worker: "data", ops: ["data_convert", CK], sources: ["parquet", "avro", "csv", "json", "jsonl", "xml", "sql", "sqlite", "db"] },
   presentations: { worker: "presentations", ops: ["office_convert", CK], sources: ["ppt", "pptx", "odp"] },
@@ -26,12 +26,12 @@ export const WORKFLOWS: Record<string, Workflow> = {
   contacts: { worker: "contacts", ops: [CK], sources: ["vcf", "vcard"] },
   calendars: { worker: "calendars", ops: [CK], sources: ["ics", "ical"] },
   logs: { worker: "logs", ops: [CK] },
-  prompts: { worker: "prompts", ops: ["prompt_generate"] }, // single or linked prompt series with locked consistency
+  prompts: { worker: "prompts", ops: ["prompt_generate", "story_generate"] }, // single or linked prompt series with locked consistency
   terminal: { worker: "logs", ops: [CK] }, // manual checksum entry point; never picked by routing // logs/diffs, plus checksum for any file no other workflow owns
 };
 
 /** Ops whose workflow is fixed regardless of the file. */
-const BY_OP: Partial<Record<RuntimeOpId, string>> = { story_generate: "documents", prompt_generate: "prompts", image_convert: "images", video_convert: "video", audio_convert: "audio", font_convert: "fonts", ebook_convert: "ebooks" };
+const BY_OP: Partial<Record<RuntimeOpId, string>> = { story_generate: "prompts", prompt_generate: "prompts", image_convert: "images", video_convert: "video", audio_convert: "audio", font_convert: "fonts", ebook_convert: "ebooks" };
 
 export const extOf = (name: unknown) => { const m = String(name ?? "").toLowerCase().match(/\.([a-z0-9]{1,12})$/); return m ? m[1] : String(name ?? "").toLowerCase().split(/[\\/]/).pop() === "dockerfile" ? "dockerfile" : ""; };
 

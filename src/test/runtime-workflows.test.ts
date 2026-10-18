@@ -12,7 +12,7 @@ describe("runtime workflow routing", () => {
     expect(pickWorkflow("prompt_generate", undefined)).toBe("prompts");
     expect(pickWorkflow("checksum", "", "blob.xyz")).toBe("logs");
   });
-  it("routes story jobs to documents.yml", () => expect(pickWorkflow("story_generate", undefined)).toBe("documents"));
+  it("routes story jobs to prompts.yml", () => expect(pickWorkflow("story_generate", undefined)).toBe("prompts"));
   it("routes office conversions by source family", () => {
     expect(pickWorkflow("office_convert", "docx")).toBe("documents");
     expect(pickWorkflow("office_convert", "xlsx")).toBe("spreadsheets");
