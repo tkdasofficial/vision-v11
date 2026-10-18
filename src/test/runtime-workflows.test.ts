@@ -33,5 +33,5 @@ describe("runtime workflow routing", () => {
     expect(pickWorkflow("checksum", "", "a.ics")).toBe("calendars");
     expect(pickWorkflow("checksum", "", "blob.xyz")).toBe("logs");
   });
-  it("refuses an op no workflow handles for that source", () => expect(pickWorkflow("render", "docx")).toBeNull());
+  it("refuses an op no workflow handles for that source", () => expect(pickWorkflow("render", "xlsx")).toBeNull());
 });
