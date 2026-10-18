@@ -25,7 +25,7 @@ export async function dispatchRun(jobId: string, operation: RuntimeOpId, source?
   const { pickWorkflow } = await import("./workflows");
   const workflow = pickWorkflow(operation, source, fileName);
   if (!workflow) throw new GithubError("This file type is not handled by the background runtime.", 400);
-  const inputs = operation === "story_generate" ? { job_id: jobId } : { job_id: jobId, operation };
+  const inputs = { job_id: jobId, operation };
   const res = await gh(`/actions/workflows/${workflow}.yml/dispatches`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ref: "main", inputs, return_run_details: true }) }, 2);
   if (res.status === 200 || res.status === 204) {
     const body: any = res.status === 200 ? await res.json().catch(() => null) : null;
