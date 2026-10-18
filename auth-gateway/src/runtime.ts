@@ -9,11 +9,13 @@
 //   POST /runtime/output/:idx           base64 text body
 //   POST /runtime/complete              {ok, error?, result?, output?}
 
+import { WORKFLOWS, pickWorkflow, workflowRef } from "../../src/lib/runtime/workflows";
+
 type D1Database = { prepare(sql: string): { bind(...v: unknown[]): { first<T = any>(): Promise<T | null>; run(): Promise<unknown> } } };
 export interface RuntimeEnv { DB: D1Database }
 
 const REPO = "tkdasofficial/vision-runtime";
-const WORKFLOW_REFS = new Set(["terminal.yml", "story.yml"].map((f) => `${REPO}/.github/workflows/${f}@refs/heads/main`));
+const WORKFLOW_REFS = new Map(Object.keys(WORKFLOWS).map((f) => [workflowRef(REPO, f), f]));
 const ISSUER = "https://token.actions.githubusercontent.com";
 const AUDIENCE = "vision-runtime-relay";
 const SESSION_TTL_MS = 40 * 60 * 1000;
@@ -39,7 +41,7 @@ async function jwks(): Promise<any[]> {
 }
 
 /** Verifies a GitHub Actions OIDC token and pins it to our repo, workflow file and main branch. */
-export async function verifyGithubOidc(token: string): Promise<{ runId: string } | null> {
+export async function verifyGithubOidc(token: string): Promise<{ runId: string; workflow: string } | null> {
   const [h, p, s] = token.split(".");
   if (!h || !p || !s) return null;
   let header: any, claims: any;
@@ -53,7 +55,7 @@ export async function verifyGithubOidc(token: string): Promise<{ runId: string }
   if (claims.iss !== ISSUER || claims.aud !== AUDIENCE || !(claims.exp > t) || claims.nbf > t + 60) return null;
   if (claims.repository !== REPO || !WORKFLOW_REFS.has(claims.job_workflow_ref) || claims.ref !== "refs/heads/main") return null;
   if (claims.event_name !== "workflow_dispatch" || !/^\d+$/.test(String(claims.run_id))) return null;
-  return { runId: String(claims.run_id) };
+  return { runId: String(claims.run_id), workflow: WORKFLOW_REFS.get(claims.job_workflow_ref)! };
 }
 
 async function session(req: Request, env: RuntimeEnv): Promise<any | null> {
@@ -72,6 +74,11 @@ export async function handleRuntime(req: Request, env: RuntimeEnv, path: string)
       if (!oidc) return json(401, { error: "untrusted runner" });
       const body: any = await req.json().catch(() => ({}));
       if (!ID_RE.test(String(body.job_id))) return json(400, { error: "bad job id" });
+      // Routing pin: a runner may only claim a job routed to the workflow it runs in.
+      const pre = await env.DB.prepare("SELECT operation, params, input_name FROM runtime_jobs WHERE job_id = ?").bind(body.job_id).first();
+      if (!pre) return json(409, { error: "job not claimable" });
+      let preParams: any = {}; try { preParams = JSON.parse(pre.params || "{}"); } catch { /* empty */ }
+      if (pickWorkflow(pre.operation, preParams.source, pre.input_name) !== oidc.workflow) return json(403, { error: "wrong workflow for this job" });
       const sess = crypto.getRandomValues(new Uint8Array(32)).reduce((a, b) => a + b.toString(16).padStart(2, "0"), "");
       const outKey = `d1:${crypto.randomUUID()}`;
       // Single claim: only a dispatched job, and only by one run.
