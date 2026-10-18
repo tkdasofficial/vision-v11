@@ -278,6 +278,7 @@ export function validateScene(
       changed.has(key) ||
       (values[key] ?? null) !== change.from ||
       (canonical && canonical.value !== change.to) ||
+      !change.evidence.trim() ||
       ![scene.action, scene.visual, ...scene.dialogue.map((d) => d.line)].some((s) =>
         s.includes(change.evidence),
       )
@@ -325,7 +326,7 @@ export type StoryAdapter = {
   tokenization: string;
   countTokens(text: string): number;
 };
-/** Fast conservative token estimate (chars/3 overestimates, so budget checks stay safe).
+/** Fast conservative token estimate (UTF-8 bytes bound multilingual input).
  *  A pure-JS BPE tokenizer was removed: encoding every large story context burned the
  *  Worker's CPU budget and killed long story runs with "Worker exceeded CPU time limit". */
 export function storyAdapter(model: string, provider: string): StoryAdapter {
@@ -340,8 +341,8 @@ export function storyAdapter(model: string, provider: string): StoryAdapter {
     outputTokens: 8192,
     headroomTokens: 2048,
     schemaMode: "normalized-json",
-    tokenization: "chars/3 conservative estimate (not provider usage)",
-    countTokens: (s) => Math.ceil(s.length / 3),
+    tokenization: "UTF-8 byte upper bound (not provider usage)",
+    countTokens: (s) => new TextEncoder().encode(s).length,
   };
 }
 export function budgetStoryMessages(

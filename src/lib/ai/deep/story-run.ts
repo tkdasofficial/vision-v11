@@ -63,7 +63,7 @@ const fail = (sceneId: string, evidence: string): StoryIssue => ({
 });
 const reviewIssues = (r: StoryReview, id: string): StoryIssue[] => [
   ...r.issues,
-  ...STORY_CATEGORIES.filter((c) => !r.checks[c] && !r.issues.some((i) => i.category === c)).map(
+  ...STORY_CATEGORIES.filter((c) => !r.checks[c] && !r.issues.some((i) => i.category === c && i.severity === "critical")).map(
     (category) => ({ ...fail(id, `${category} check failed or was not performed`), category }),
   ),
 ];
@@ -98,6 +98,7 @@ export async function runStructuredStory(o: {
   requestId: string;
   analysis: RequestAnalysis;
   system: string;
+  context?: ChatMsg[];
   call: ModelCall;
   reviewCall?: ModelCall;
   adapter: StoryAdapter;
@@ -152,7 +153,7 @@ export async function runStructuredStory(o: {
         throw new Error("Story time budget reached; approved scenes remain saved.");
       const msgs: ChatMsg[] = [
         { role: "system", content: `${o.system}\n\n${system}` },
-        { role: "user", content: JSON.stringify(payload) },
+        { role: "user", content: JSON.stringify({ conversationContext: o.context ?? [], task: payload }) },
       ];
       const ctx = budgetStoryMessages(msgs, o.adapter);
       entry.inputTokens = ctx.tokens;
