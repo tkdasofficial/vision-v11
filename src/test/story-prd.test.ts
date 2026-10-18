@@ -97,6 +97,36 @@ describe("story PRD contracts", () => {
       evidence: s.action,
     });
   });
+  it("rejects empty transition evidence even when the proposed state matches", () => {
+    const p = storyFixture(1), s = sceneFixture("S1");
+    p.manifest[0].after = [{ entityId: "C1", field: "possession", value: "stored" }];
+    s.changes = [{ entityId: "C1", field: "possession", from: "P1", to: "stored", evidence: "" }];
+    const v = validateScene(p, p.manifest[0], s, initialSnapshot(p));
+    expect(v.issues.some((i) => i.category === "continuity")).toBe(true);
+    expect(v.candidate.values[stateKey("C1", "possession")]).toBe("P1");
+  });
+  it("bounds multilingual context by UTF-8 bytes rather than character count", () => {
+    const text = "हिन्दी";
+    expect(storyAdapter("unknown", "unknown").countTokens(text)).toBe(new TextEncoder().encode(text).length);
+    expect(storyAdapter("unknown", "unknown").countTokens(text)).toBeGreaterThan(text.length);
+  });
+  it("a false review check remains blocking even with only warning issues", async () => {
+    const base = mockStory(1);
+    const call: ModelCall = async (msgs) => String(msgs[0].content).includes("Independently review")
+      ? { ok: true, finishReason: "stop", text: JSON.stringify({ ...passReview, checks: { ...passReview.checks, continuity: false }, issues: [{ severity: "warning", category: "continuity", sceneId: "plan", reference: "R1", evidence: "Not checked", correction: "Check continuity" }] }) }
+      : base(msgs);
+    const run = await runStructuredStory({ ...options(1, call), maxRepairs: 0 });
+    expect(run.status).toBe("unresolved");
+    expect(Object.keys(run.scenes)).toHaveLength(0);
+  });
+  it("passes conversation canon and future beats into scene generation", async () => {
+    const call = mockStory(3);
+    await runStructuredStory({ ...options(3, call), context: [{ role: "assistant", content: "Ari cannot swim." }] });
+    const sceneCalls = vi.mocked(call).mock.calls.filter(([msgs]) => String(msgs[0].content).includes("Write one scene"));
+    const payload = JSON.parse(String(sceneCalls[0][0][1].content));
+    expect(payload.conversationContext[0].content).toBe("Ari cannot swim.");
+    expect(payload.storyOutline.map((s: { id: string }) => s.id)).toEqual(["S1", "S2", "S3"]);
+  });
   it("finds transitive dependent scenes only", () => {
     const p = storyFixture(10);
     expect(dependentScenes(p, ["S8"])).toEqual(["S8", "S9", "S10"]);

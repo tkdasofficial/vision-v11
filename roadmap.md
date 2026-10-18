@@ -1,5 +1,10 @@
 # Roadmap — Memory, Output Control, Artifacts & Activity Tracking
 
+## Current request — Upgrade story scripts and generation pipelines
+- [x] Strengthened conversation canon, full-outline scene context, nonempty transition evidence, blocking review failures and two-scene continuity checks; GitHub runtime adds causal contracts, validated persistent story state, bounded scene repair, original-count rejection and final audit. Models unchanged.
+- [x] App regression suite: 1,487 passed, one skipped; runtime story/operations: 31 passed. Updated vision-runtime main at 836b2477b1dfa9e9385cc6489de50a75a9e21a29; GitHub verification pending at run 39132284655.
+- [x] Evidence/limits documented in docs/story-consistency.md. No fresh signed-in generation or measured quality scores; Deep local server changes still await authorized Cloudflare activation. Runtime checkpoints remain local to a runner (not cross-run durable), workflow ref remains main, one combined story.md delivery and existing routing retained.
+
 ## Current request — GitHub runtime provider selection
 - [x] Switched runtime/story.py to NVIDIA nvidia/nemotron-3-super-120b-a12b; retained Groq openai/gpt-oss-120b fallback and verified both GitHub-secret names. Removed optional cap only for the upgraded primary. Runtime repository updated through GitHub API; no Worker deployment or preview URL change.
 - [x] 22 runtime regressions passed; GitHub runtime-tests succeeded. Signed-in exact ten-scene request completed in 1123s; GitHub run 39119335115 succeeded. Chat c029bdf4-fbee-4395-a62d-2c72cb60d63c restored after closing/reopening; story.md downloaded twice (155302 bytes, blueprint + exactly scenes 1–10, all ten sections each, Devanagari present in each scene, no Devanagari in visual prompts).

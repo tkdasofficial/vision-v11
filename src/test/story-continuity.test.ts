@@ -65,6 +65,10 @@ describe("1. planning is required for multi-scene stories", () => {
 });
 
 describe("2. object-state continuity", () => {
+  it("checks continuity even for a two-scene story", () => {
+    const issues = checkPlot("Scene 1: Bolt destroys the crystal.\n\nScene 2: Bolt holds the crystal in his hand.", "scene");
+    expect(issues.some((i) => i.code === "plot_object_reuse" && i.items?.includes(2))).toBe(true);
+  });
   it("flags the core retrieved twice with nothing losing it in between (attempt 5, scenes 12 and 17)", () => {
     const i = checkObjectStates(scenes({ 3: "Bolt sees the empty stand where the energy core was.", 4: "Bolt grabs the energy core from the thief's bench.", 6: "Bolt holds the energy core close.", 8: "Bolt retrieves the energy core from the conveyor." }));
     expect(i[0]).toMatchObject({ code: "plot_object_state", items: [4, 8] });
