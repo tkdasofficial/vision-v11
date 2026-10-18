@@ -2,7 +2,6 @@
 import type { RuntimeOpId } from "./operations";
 
 const API = "https://api.github.com/repos/tkdasofficial/vision-runtime";
-const WORKFLOW = "run-job.yml";
 
 export class GithubError extends Error { constructor(msg: string, public status: number) { super(msg); } }
 
@@ -23,7 +22,10 @@ async function gh(path: string, init: RequestInit = {}, tries = 3): Promise<Resp
 
 /** Dispatches one job. Returns the run id when GitHub provides it. */
 export async function dispatchRun(jobId: string, operation: RuntimeOpId): Promise<string | null> {
-  const res = await gh(`/actions/workflows/${WORKFLOW}/dispatches`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ref: "main", inputs: { job_id: jobId, operation }, return_run_details: true }) }, 2);
+  const story = operation === "story_generate";
+  const workflow = story ? "story.yml" : "terminal.yml";
+  const inputs = story ? { job_id: jobId } : { job_id: jobId, operation };
+  const res = await gh(`/actions/workflows/${workflow}/dispatches`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ref: "main", inputs, return_run_details: true }) }, 2);
   if (res.status === 200 || res.status === 204) {
     const body: any = res.status === 200 ? await res.json().catch(() => null) : null;
     return body?.workflow_run_id ? String(body.workflow_run_id) : null;
