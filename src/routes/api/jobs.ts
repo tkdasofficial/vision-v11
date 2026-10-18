@@ -73,11 +73,11 @@ export const Route = createFileRoute("/api/jobs")({
         if (typeof i.prompt === "string" && i.prompt.length > 80000) return Response.json({ error: "The referenced content is too large for this task." }, { status: 413 });
         // Prompt-only background operations (story generation) arrive as JSON without a file.
         if (body.type === "runtime_task") {
-          if (i.operation !== "story_generate") return Response.json({ error: "Invalid request." }, { status: 400 });
+          if (i.operation !== "story_generate" && i.operation !== "prompt_generate") return Response.json({ error: "Invalid request." }, { status: 400 });
           const prompt = str(i.params?.prompt, 60000);
           if (!prompt?.trim()) return Response.json({ error: "Tell me what to write." }, { status: 400 });
           try {
-            const job = await startJob(caller.user.id, body.id, "runtime_task", { operation: "story_generate", params: { prompt }, fileName: "story.md", mime: "text/markdown" }, 1, sessionOf(body.sessionId));
+            const job = await startJob(caller.user.id, body.id, "runtime_task", i.operation === "prompt_generate" ? { operation: "prompt_generate", params: { prompt }, fileName: "prompts.md", mime: "text/markdown" } : { operation: "story_generate", params: { prompt }, fileName: "story.md", mime: "text/markdown" }, 1, sessionOf(body.sessionId));
             return Response.json({ job });
           } catch (e: any) {
             return Response.json({ error: /UNIQUE/i.test(String(e?.message)) ? "This task already exists." : "Could not start the task." }, { status: 409 });

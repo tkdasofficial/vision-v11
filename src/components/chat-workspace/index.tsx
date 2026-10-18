@@ -432,7 +432,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
         return;
       }
       const src = ref.kind === "found" ? `\n\n${sourceBlock(ref)}` : "";
-      if (route.kind === "story") await runInlineJob("runtime_task", { operation: "story_generate", params: { prompt: content + src } }, sessionId);
+      if (route.kind === "story") await runInlineJob("runtime_task", { operation: isPromptSeries(content) ? "prompt_generate" : "story_generate", params: { prompt: content + src } }, sessionId);
       else if (route.kind === "long_context") await runInlineJob("long_context", { prompt: content + src }, sessionId);
       else if (route.kind === "tool") await runInlineJob("agent_task", { prompt: content + src }, sessionId);
       else if (route.kind === "project") await runInlineJob("project_generate", { prompt: content + src }, sessionId);
