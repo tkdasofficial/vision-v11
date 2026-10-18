@@ -77,3 +77,9 @@ describe("linked prompt series", () => {
     expect(_ps("improve this prompt")).toBe(false);
   });
 });
+describe("linked prompt routing", () => {
+  it("linked series go to the runtime, plain lists stay chat", () => {
+    expect(routeRequest("Generate 20 linked scene prompts for a short film").kind).toBe("story");
+    expect(routeRequest("create 5 image prompts for a sunset scene").kind).toBe("chat");
+  });
+});

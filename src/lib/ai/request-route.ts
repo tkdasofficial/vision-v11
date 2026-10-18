@@ -57,7 +57,8 @@ export function routeRequest(content: string, mode: ChatMode = "default"): Reque
     && /\b(?:story|scene[- ]generation\s+prompts?|screenplay|narrative)\b/i.test(content)
     && /\b(?:generate|write|create|produce|craft|develop)\b/i.test(content)) return { kind: "story" };
   // A counted series of linked image/video prompts (5, 10, 20 …) runs on the runtime's prompts worker.
-  if (isPromptSeries(content) && /\b(?:generate|write|create|produce|craft|make|give)\b/i.test(content)) return { kind: "story" };
+  // Unlinked lists ("5 image prompts for a sunset") stay a chat answer.
+  if (isPromptSeries(content) && /\b(?:linked|connected|story|scenes?|sequen\w*|consistent|continuous|series|storyboard|episode|chapter)\b/i.test(content) && /\b(?:generate|write|create|produce|craft|make|give)\b/i.test(content)) return { kind: "story" };
   return { kind: "chat" };
 }
 
