@@ -56,7 +56,15 @@ export function routeRequest(content: string, mode: ChatMode = "default"): Reque
   if (/\b\d{1,2}\s*(?:detailed\s*|sequential\s*|separate\s*|distinct\s*|,\s*)*\b(?:scene|chapter|episode|part)s?\b/i.test(content)
     && /\b(?:story|scene[- ]generation\s+prompts?|screenplay|narrative)\b/i.test(content)
     && /\b(?:generate|write|create|produce|craft|develop)\b/i.test(content)) return { kind: "story" };
+  // A counted series of linked image/video prompts (5, 10, 20 …) runs on the runtime's prompts worker.
+  if (isPromptSeries(content) && /\b(?:generate|write|create|produce|craft|make|give)\b/i.test(content)) return { kind: "story" };
   return { kind: "chat" };
+}
+
+/** True for a counted set of 2+ prompts ("20 scene prompts", "ten linked image prompts"). */
+export function isPromptSeries(content: string): boolean {
+  const m = /\b(\d{1,3}|two|three|four|five|six|seven|eight|nine|ten|twelve|fifteen|twenty|thirty|fifty)[\s-]+(?:[\w-]+[\s,]+){0,3}?prompts\b/i.exec(content);
+  return !!m && (Number.isNaN(Number(m[1])) || Number(m[1]) >= 2);
 }
 
 /** True when the user explicitly asks for sources/citations/references (not "source code"). */

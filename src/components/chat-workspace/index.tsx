@@ -8,7 +8,7 @@ import { takePendingProjectPrompt } from "@/lib/pending-project";
 import AnnouncementBanner from "@/components/announcement-banner";
 
 import type { AITool, ChatMessage as ChatMessageType, DeepStage, MessageAttachment, PastedBlock } from "@/lib/types";
-import { routeRequest } from "@/lib/ai/request-route";
+import { isPromptSeries, routeRequest } from "@/lib/ai/request-route";
 import { resolveReference, sourceBlock } from "@/lib/ai/references";
 import { planPluginSend, PLUGIN_BY_ID } from "@/lib/plugins/manifest";
 const tagged = (ids: string[] | undefined, text: string) => [...(ids ?? []).map((i) => `@${PLUGIN_BY_ID.get(i)?.name ?? i}`), text].filter(Boolean).join(" ");

@@ -177,7 +177,7 @@ async function finalize(job: JobRun, rt: any) {
     const isPrompts = rt.operation === "prompt_generate";
     const text = new TextDecoder().decode(bytes);
     if (text.trim().length < (isPrompts ? 200 : 500)) { await deleteArtifactBytes(rt.output_key).catch(() => undefined); throw new Error("The generated story is incomplete."); }
-    await job.step("saving", "Saving the story privately to Google Drive");
+    await job.step("saving", isPrompts ? "Saving the prompts privately to Google Drive" : "Saving the story privately to Google Drive");
     const name = (typeof rt.output_name === "string" && rt.output_name.endsWith(".md")) ? rt.output_name : isPrompts ? "prompts.md" : "story.md";
     await job.saveArtifact(name, "text/markdown", bytes, "file");
     await d1("UPDATE runtime_jobs SET status = 'completed', updated_at = ? WHERE job_id = ?", [now(), rt.job_id]);
