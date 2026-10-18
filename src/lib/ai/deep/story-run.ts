@@ -153,7 +153,7 @@ export async function runStructuredStory(o: {
         throw new Error("Story time budget reached; approved scenes remain saved.");
       const msgs: ChatMsg[] = [
         { role: "system", content: `${o.system}\n\n${system}` },
-        { role: "user", content: JSON.stringify({ conversationContext: o.context ?? [], task: payload }) },
+        { role: "user", content: JSON.stringify({ conversationContext: o.context ?? [], ...(payload as Record<string, unknown>) }) },
       ];
       const ctx = budgetStoryMessages(msgs, o.adapter);
       entry.inputTokens = ctx.tokens;
@@ -265,6 +265,7 @@ export async function runStructuredStory(o: {
           const ctx = {
             request: o.request,
             requirements: p.requirements,
+            storyOutline: p.manifest.map(({ id, order, purpose, emotionalBeat, requiredEvents, dependsOn }) => ({ id, order, purpose, emotionalBeat, requiredEvents, dependsOn })),
             blueprint: {
               ...p.blueprint,
               entities: p.blueprint.entities.filter((e) => entities.has(e.id)),
