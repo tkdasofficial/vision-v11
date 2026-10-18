@@ -181,7 +181,8 @@ async function finalize(job: JobRun, rt: any) {
     const name = (typeof rt.output_name === "string" && rt.output_name.endsWith(".md")) ? rt.output_name : isPrompts ? "prompts.md" : "story.md";
     await job.saveArtifact(name, "text/markdown", bytes, "file");
     await d1("UPDATE runtime_jobs SET status = 'completed', updated_at = ? WHERE job_id = ?", [now(), rt.job_id]);
-    await job.finish({ operation: rt.operation, fileName: name, output: name, details: result ?? {} });
+    // Story/prompt replies show their blocks inline (capped so the job row stays small); the file holds everything.
+    await job.finish({ operation: rt.operation, fileName: name, output: name, details: result ?? {}, ...(text.length <= 400_000 ? { content: text } : {}) });
     // The full story also lands in the chat as the task's reply, so it survives artifact expiry.
     if (job.sessionId) {
       const { saveReply } = await import("@/lib/jobs/chat-background.server");
