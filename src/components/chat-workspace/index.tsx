@@ -8,7 +8,7 @@ import { takePendingProjectPrompt } from "@/lib/pending-project";
 import AnnouncementBanner from "@/components/announcement-banner";
 
 import type { AITool, ChatMessage as ChatMessageType, DeepStage, MessageAttachment, PastedBlock } from "@/lib/types";
-import { routeRequest } from "@/lib/ai/request-route";
+import { isPromptSeries, routeRequest } from "@/lib/ai/request-route";
 import { resolveReference, sourceBlock } from "@/lib/ai/references";
 import { planPluginSend, PLUGIN_BY_ID } from "@/lib/plugins/manifest";
 const tagged = (ids: string[] | undefined, text: string) => [...(ids ?? []).map((i) => `@${PLUGIN_BY_ID.get(i)?.name ?? i}`), text].filter(Boolean).join(" ");
@@ -432,7 +432,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
         return;
       }
       const src = ref.kind === "found" ? `\n\n${sourceBlock(ref)}` : "";
-      if (route.kind === "story") await runInlineJob("runtime_task", { operation: "story_generate", params: { prompt: content + src } }, sessionId);
+      if (route.kind === "story") await runInlineJob("runtime_task", { operation: isPromptSeries(content) ? "prompt_generate" : "story_generate", params: { prompt: content + src } }, sessionId);
       else if (route.kind === "long_context") await runInlineJob("long_context", { prompt: content + src }, sessionId);
       else if (route.kind === "tool") await runInlineJob("agent_task", { prompt: content + src }, sessionId);
       else if (route.kind === "project") await runInlineJob("project_generate", { prompt: content + src }, sessionId);

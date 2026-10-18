@@ -67,3 +67,19 @@ describe("story_generate runtime params", () => {
     expect(RUNTIME_OPS.story_generate.maxInput).toBe(0);
   });
 });
+
+import { isPromptSeries as _ps } from "@/lib/ai/request-route";
+describe("linked prompt series", () => {
+  it("detects counted prompt series of 2+", () => {
+    expect(_ps("Generate 20 linked scene prompts for a short film")).toBe(true);
+    expect(_ps("write ten image prompts")).toBe(true);
+    expect(_ps("write 1 prompts")).toBe(false);
+    expect(_ps("improve this prompt")).toBe(false);
+  });
+});
+describe("linked prompt routing", () => {
+  it("linked series go to the runtime, plain lists stay chat", () => {
+    expect(routeRequest("Generate 20 linked scene prompts for a short film").kind).toBe("story");
+    expect(routeRequest("create 5 image prompts for a sunset scene").kind).toBe("chat");
+  });
+});

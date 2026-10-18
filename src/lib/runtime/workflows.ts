@@ -1,4 +1,4 @@
-// Workflow routing for the Vision-Runtime repo: 18 one-word workflows, one per worker.
+// Workflow routing for the Vision-Runtime repo: 20 one-word workflows (terminal is a manual alias of logs).
 // Pure and shared by the dispatcher (github.server.ts) and the relay (auth-gateway/src/runtime.ts),
 // so a runner can only claim jobs routed to the exact workflow it runs in.
 // Mirrored by registry/workflows.json in tkdasofficial/vision-runtime (kept in sync by tests on both sides).
@@ -25,11 +25,13 @@ export const WORKFLOWS: Record<string, Workflow> = {
   maps: { worker: "maps", ops: ["data_convert", CK], sources: ["shp", "geojson", "kml", "gpx"] },
   contacts: { worker: "contacts", ops: [CK], sources: ["vcf", "vcard"] },
   calendars: { worker: "calendars", ops: [CK], sources: ["ics", "ical"] },
-  logs: { worker: "logs", ops: [CK] }, // logs/diffs, plus checksum for any file no other workflow owns
+  logs: { worker: "logs", ops: [CK] },
+  prompts: { worker: "prompts", ops: ["prompt_generate"] }, // single or linked prompt series with locked consistency
+  terminal: { worker: "logs", ops: [CK] }, // manual checksum entry point; never picked by routing // logs/diffs, plus checksum for any file no other workflow owns
 };
 
 /** Ops whose workflow is fixed regardless of the file. */
-const BY_OP: Partial<Record<RuntimeOpId, string>> = { story_generate: "documents", image_convert: "images", video_convert: "video", audio_convert: "audio", font_convert: "fonts", ebook_convert: "ebooks" };
+const BY_OP: Partial<Record<RuntimeOpId, string>> = { story_generate: "documents", prompt_generate: "prompts", image_convert: "images", video_convert: "video", audio_convert: "audio", font_convert: "fonts", ebook_convert: "ebooks" };
 
 export const extOf = (name: unknown) => { const m = String(name ?? "").toLowerCase().match(/\.([a-z0-9]{1,12})$/); return m ? m[1] : String(name ?? "").toLowerCase().split(/[\\/]/).pop() === "dockerfile" ? "dockerfile" : ""; };
 
