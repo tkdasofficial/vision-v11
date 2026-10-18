@@ -188,10 +188,10 @@ export function checkObjectStates(scenes: Scene[]): Issue[] {
   return issues;
 }
 
-/** Runs every whole-story check across all scenes together. Needs at least three scenes. */
+/** Runs every whole-story check, including short two-scene continuity boundaries. */
 export function checkPlot(text: string, noun: string | null): Issue[] {
   const body = text.replace(/```[\s\S]*?```/g, (m) => m.replace(/^```[^\n]*\n?|```$/g, ""));
   const scenes = splitItems(body, noun ?? "scene");
-  if (scenes.length < 3) return [];
+  if (!scenes.length) return [];
   return [...checkObjectReuse(scenes), ...checkObjectStates(scenes), ...checkWornItems(scenes), ...checkCameraDirection(scenes), ...checkCharacterState(scenes), ...checkTransitions(scenes)];
 }
