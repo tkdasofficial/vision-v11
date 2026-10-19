@@ -36,6 +36,20 @@ const options = (count: number, call: ModelCall) => ({
   adapter: storyAdapter("gpt-oss-120b", "groq"),
 });
 describe("story PRD contracts", () => {
+  it("requires requested fields and blocks underlength dialogue before approval", async () => {
+    const call = mockStory(1, (_payload, scene) => { scene.dialogue = [{ characterId: "C1", line: "homework ".repeat(24).trim() }]; });
+    const request = "Create a story of 1 scene, each scene have 25 to 30 words dialogue, and give me visual prompt & dialogue.";
+    const run = await runStructuredStory({ ...options(1, call), request, analysis: analyzeRequest(request), maxRepairs: 0 });
+    expect(run.plan?.manifest[0].fields).toEqual(["visual", "dialogue"]);
+    expect(run.status).toBe("unresolved");
+    expect(run.issues.some((i) => i.reference === "spoken-word-range")).toBe(true);
+  });
+  it("accepts dialogue in range without counting the visual field", async () => {
+    const call = mockStory(1, (_payload, scene) => { scene.dialogue = [{ characterId: "C1", line: "homework ".repeat(27).trim() }]; });
+    const request = "Create a story of 1 scene, each scene have 25 to 30 words dialogue, and give me visual prompt & dialogue.";
+    const run = await runStructuredStory({ ...options(1, call), request, analysis: analyzeRequest(request) });
+    expect(run.status).toBe("passed");
+  });
   it("uses provider-specific context limits while keeping configured output headroom", () => {
     expect(storyAdapter("openai/gpt-oss-120b", "groq").contextTokens).toBe(131072);
     expect(storyAdapter("@cf/openai/gpt-oss-120b", "cf").contextTokens).toBe(128000);

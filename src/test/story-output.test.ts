@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { wantsStoryFile, requestedStoryFields } from "@/lib/ai/story-output";
+import { wantsStoryFile, requestedStoryFields, storyDialogueRange, spokenStoryWords } from "@/lib/ai/story-output";
 import { routeRequest } from "@/lib/ai/request-route";
 import { detectContentIntent } from "@/lib/ai/content-intent";
 import { renderStory, type StoryRun } from "@/lib/ai/deep/story-run";
@@ -7,6 +7,11 @@ import { analyzeRequest } from "@/lib/ai/deep/analyze";
 import { storyFixture, sceneFixture } from "./fixtures/story-prd";
 
 describe("story delivery rules", () => {
+  it("counts only spoken dialogue with exact per-scene ranges", () => {
+    expect(storyDialogueRange("each scene have 25 to 30 words dialogue")).toEqual({ min: 25, max: 30 });
+    expect(spokenStoryWords(["(quietly) " + "homework ".repeat(25) + "[smiles]"])).toBe(25);
+    expect(spokenStoryWords(["homework ".repeat(31)])).toBe(31);
+  });
   it("selects only visual prompt and dialogue from explicit delivery, not input characters", () => {
     expect(requestedStoryFields("Create a story of 10 scenes, each scene have 25 to 30 words dialogue, and give me both visual prompt & dialogue of each scenes. Characters: A Monkey and A Rabbit. Theme: School & Homework.")).toEqual(["visual", "dialogue"]);
   });

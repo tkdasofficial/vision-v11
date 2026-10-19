@@ -15,7 +15,7 @@ export function validateRuntimeStory(text: string, prompt: string): string[] {
   for (const [i, match] of matches.entries()) {
     const start = match.index ?? 0;
     const scene = body.slice(start + match[0].length, matches[i + 1]?.index ?? body.length);
-    const sections = Array.from(scene.matchAll(/^\s*#{2,3}\s+([^\n]+)\n([\s\S]*?)(?=^\s*#{2,3}\s|$)/gm));
+    const sections = Array.from(scene.matchAll(/^\s*#{2,3}\s+([^\n]+)\n([\s\S]*?)(?=^\s*#{2,3}\s|(?![\s\S]))/gm));
     const headings = sections.map((m) => m[1].trim().toLowerCase());
     for (const field of requested) if (!headings.includes(names[field])) issues.push(`Scene ${match[1]} is missing ${names[field]}.`);
     if (requested.length && headings.some((h) => !requested.some((field) => names[field] === h)))
