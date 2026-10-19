@@ -4,14 +4,15 @@
 
 **Plan only.** No application/runtime source changes, commits, model generation, workflow runs or deployments during this review. Only this approval document is written. Preserve GitHub Actions, provider order, workflow routing, OIDC security, private storage and existing chat delivery.
 
-## 1. Current architecture and evidence
+## 1. Current architecture
 
-- Default counted stories/linked prompts: `src/lib/ai/request-route.ts:18–63` → `components/chat-workspace/index.tsx:420–435` → `/api/jobs` → `jobs/dispatch.server.ts` → `runtime/runtime.server.ts` → `runtime/github.server.ts:24–32`.
-- Both operations dispatch **prompts.yml**. GitHub `workers/prompts/index.py` aliases `workers/prompts/story/index.py`; `runtime/operations.py:194–208` registers both. Retain one generator.
-- `runtime/runner.py:57–112` claims through OIDC, loads input, runs the worker, uploads and reports. `worker_base.py:53–78` supplies operation/path/signature gates. Cloudflare `auth-gateway/src/runtime.ts:43–125` authenticates runners and stores results.
-- App `runtime/runtime.server.ts:158–198` checks bytes, validates output, optionally saves a requested file and saves the chat reply. Its text gate does not independently establish semantic clothing/background continuity.
-- Deep chat is a separate Cloudflare path. `ai/deep/story.ts` already has canon, manifests and dependencies; `story-run.ts:195–423` has generation, review, repairs and dependent revalidation. Reuse these, not another engine.
-- Existing coverage includes runtime `tests/test_prompts.py` and app `story-prd.test.ts`, `story-output.test.ts`, `runtime-story-validation.test.ts`. Mock passes do not establish live quality. Local Cloudflare changes were previously recorded as undeployed; deployed parity is not established here.
+Default stories/linked prompts route through `src/lib/ai/request-route.ts:18–63` → chat workspace → `/api/jobs` → `jobs/dispatch.server.ts` → `runtime/runtime.server.ts` → `runtime/github.server.ts:24–32`.
+
+Both operations use **prompts.yml**. GitHub `workers/prompts/index.py` aliases `workers/prompts/story/index.py`; `runtime/operations.py:194–208` registers both. Retain one generator. `runtime/runner.py:57–112` claims through OIDC, runs the worker and uploads/reports; `worker_base.py:53–78` supplies operation/path/signature gates.
+
+Cloudflare `auth-gateway/src/runtime.ts:43–125` authenticates runners/stores results; app `runtime/runtime.server.ts:158–198` checks bytes, validates output, saves requested files and chat replies. Its text gate does not establish semantic background/clothing continuity.
+
+Deep chat is separate: `ai/deep/story.ts` already defines canon/manifests/dependencies; `story-run.ts:195–423` orchestrates reviews, repairs and dependent revalidation. Reuse these. Existing story tests mostly use mock models; they do not prove live quality. Previously recorded local Cloudflare edits remain undeployed; deployed parity is unverified.
 
 ## 2. Failure diagnosis: confirmed versus unknown
 
@@ -19,18 +20,16 @@
 
 Four Nemotron calls returned successfully, logging 59/89/50/44 seconds. No logged 429, provider error or timeout. The workflow limit is 45 minutes. **The immediate cause was exhausted plan validation, not an observed timeout/outage.**
 
-### Confirmed design gaps and proposed fixes
+### Confirmed issues and fixes
 
-| Evidence | Fix |
-|---|---|
-| Planning sends `{brief, blueprint, N, repair: problems}` but not the rejected plan; errors lack affected paths/expected IDs (`story/index.py:926–949`). | Supply current candidate, exact findings and immutable constraints; apply scoped patches instead of repeatedly regenerating a plan. |
-| Background gate compares raw room strings and selected position values (`202–215`). Direct pure-function probes reject equivalent-looking room aliases and allow an undeclared bedroom position. | Separate canonical room IDs from positions within rooms; validate references and resolve only registered aliases. |
-| One-room preprocessing overwrites positions (`930–942`); normalization/validation rewrite before-state, times and wardrobe (`317–484`). | Make checks read-only; distinguish harmless formatting from semantic repair and retain before/after evidence. |
-| Logs show counts/key names and shortened errors, not failed locations or repair responses. Rejected plans are not checkpointed; runner deletes scratch (`126–127`). | Store bounded owner-private candidates/diffs; public logs contain safe issue codes, paths, hashes, timings and revision only. |
+- **Repair lacks the rejected plan:** `story/index.py:926–949` sends brief, unchanged blueprint, count and error strings, not prior candidate or exact offending paths. Send candidate plus structured findings and apply scoped patches.
+- **Ambiguous identity:** background check `202–215` compares raw room/position strings. Pure-function probes reject equivalent-looking aliases and permit an undeclared bedroom position. Separate canonical room IDs from within-room positions and validate references.
+- **Checks mutate evidence:** preprocessing overwrites positions (`930–942`); normalization/validation rewrite state/times/wardrobe (`317–484`). Make validation read-only and semantic repair explicit.
+- **Insufficient diagnostics:** logs omit candidate location values/repair responses; failed plans are not checkpointed and runner deletes scratch (`126–127`). Retain bounded private candidates/diffs; log only safe findings/hashes/timing publicly.
 
-**Not proved:** real movement outside, alias confusion, malformed locations, blueprint conflicts or model noncompliance. Stale validation is not shown: new candidates are revalidated. Scene repair/rollback cannot explain this particular stop because those stages never ran. My earlier statement that the background definitely changed was too strong.
+Actual room changes, alias confusion, malformed plans, blueprint conflicts and model noncompliance are **hypotheses**. New candidates are revalidated; stale checks are not shown. Scene repair/rollback never ran. My earlier assertion that the background definitely changed was too strong.
 
-Current main **252d3cef** differs from failed **0521a11c** by an outdoor-position phrase check; the planning payload is unchanged. Diagnose against the executed revision. Exact candidate-level root cause remains unknown without privately retained rejected plans and repair responses.
+Current **252d3cef** adds an outdoor-position phrase check versus failed **0521a11c**, not improved plan repair. Exact historical candidate-level cause cannot be established without the missing outputs.
 
 ## 3. Root-level architecture — technical design
 
@@ -82,22 +81,21 @@ Protect relay writes against cancellation/timeout races (`auth-gateway/src/runti
 
 ## 6. Dependency-ordered implementation
 
-1. Define contract/schema, shared fixtures and private diagnostic retention.
-2. Extract pure checks; introduce canonical references and explicit normalization.
-3. Integrate plan/scene/assembly profiles and targeted repairs into the existing prompts/story worker; add shared budgets and report-bound checkpoints.
-4. Add optional operation-profile hooks to shared worker/runner plumbing. Generic workers retain existing format/security checks; no story-specific policy leaks into conversions.
-5. Integrate TS contract/report adapters and existing Deep state checks; fix runtime count validation's early return and presentation-dependent parsing.
-6. Harden relay/recovery/delivery interleavings; then approved staged release and authenticated live verification. No automatic workflow triggering or deployment.
+1. Define contracts/shared fixtures and private diagnostic retention.
+2. Extract pure checks; add canonical references and explicit normalization.
+3. Integrate plan/scene/assembly profiles, scoped repairs, budgets and checkpoints into the existing worker.
+4. Add optional shared worker/runner hooks; no story policy in conversion workers.
+5. Add TS adapters; reuse Deep state logic; fix runtime count-check early return and format-dependent parsing.
+6. Test/harden lifecycle recovery, then authorized staged release and authenticated verification.
 
 ## 7. Tests and measurable acceptance
 
-- Unit fixtures: aliases versus real room changes, unknown rooms, allowed changes, outfits/identity, time/props/knowledge, missing/duplicate/order errors, 24/25/30/31 spoken words, fields/grouping/scripts, conflicts, unavailable checks and high-score flagged failures.
-- Repair fixtures: previous candidate in payload, patches applied, untouched fields unchanged, rejected canon edits, dependent revalidation, repeated-failure stop, rollback/report consistency and version/hash invalidation.
-- Fake-clock/fault tests: 429/5xx/late responses, queue/deadline/session expiry, checkpoint restarts, duplicate dispatch/polls, cancelled-job writes, interruption after each delivery write, and permitted partial output.
-- Run affected existing story, format, security, download and recovery suites. Shared contract fixtures cover Python/TS boundary parity without copying semantic engines.
-- **After approval:** three consecutive authenticated live Monkey/Rabbit runs through submission → GitHub → Cloudflare → chat → reload. Require exactly 10 scenes and two requested sections each; every dialogue 25–30 spoken words; unchanged clothes/background; no blueprint/file; one durable reply; accepted artifact/report hashes match.
-- Each live result needs independent evidence-based content/continuity review **≥90/100**, with rubric and cited failures. All mandatory checks must pass irrespective of score. Also exercise single prompt, timed story, permitted background changes, Deep mode and representative non-story operations.
-- Record revision, job/run IDs, stage timings and call counts. Compare with the failed baseline; choose a latency target after an approved successful baseline, not an unmeasured speed promise.
+- Unit fixtures: aliases/real room changes, unknown rooms, allowed changes, clothes/identity/time/props/knowledge, missing/duplicate/order errors, 24/25/30/31 spoken words, requested fields/scripts/grouping, conflicts, unavailable checks and high-score flagged failures.
+- Repair tests: prior candidate supplied, patches applied, valid fields unchanged, locked edits rejected, dependents revalidated, repeated failures stop, rollback/report hashes match and stale versions invalidate.
+- Fake-clock/fault tests: provider errors/late responses, queue/deadline/session expiry, restart integrity, duplicate dispatch/polls, cancellation races, interrupted delivery and allowed partial output. Run affected story, format, security, download and recovery suites; shared fixtures verify Python/TS contract parity.
+- **After approval:** three consecutive authenticated Monkey/Rabbit runs through submission → GitHub → Cloudflare → chat → reload. Require 10 ordered scenes, two requested sections each, 25–30 spoken dialogue words each, fixed clothes/background, no blueprint/file, one durable reply and matching artifact/report hashes.
+- All mandatory checks pass; each result receives independent evidence-based quality/continuity review **≥90/100**, with rubric and cited failures. Runtime scores/mock tests are not substitutes. Also test single prompt, timed story, permitted background changes, Deep mode and representative non-story operations.
+- Record revision, IDs, stage latency and calls. Establish a successful baseline before committing to a speed target.
 
 ## 8. Files and workflows in implementation scope
 
@@ -109,6 +107,6 @@ Protect relay writes against cancellation/timeout races (`auth-gateway/src/runti
 
 ## 9. Risks and approval decisions
 
-Strict checks can falsely reject paraphrases; canonical IDs and scoped evidence review mitigate this. Semantic review adds latency/cost and remains fallible. Private diagnostics/checkpoints require owner isolation, bounded retention and no public content logging. Old reports cannot silently gain new approval.
+Canonical IDs reduce false rejections, but semantic review remains fallible and adds cost/latency. Private records need owner isolation, bounded retention and no public logging. Version changes invalidate old approvals.
 
 Recommended defaults: existing GitHub/models, all-or-nothing exact-count delivery, bounded private diagnostics and staged compatibility rollout. No choice blocks approval. Live tests consume provider resources; workflow runs and app deployment require explicit authorization. **Wait for review and approval before implementation.**
