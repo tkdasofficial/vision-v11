@@ -193,3 +193,9 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [x] Fixed explicit two-field selection, separate grouping, blocking dialogue ranges, fixed-background plan gates, hidden ledger; GitHub runtime pushed at 3e4f8696. 61 runtime and 106 app regression tests passed, one skipped; automatic build OK.
 - [x] Reran through signed-in app at chat 450e0441: failed after 522s; stored error says consistency 85%, below 90%. No approved output to rate; never claimed success.
 - [ ] Approved new result and independent ≥90% rating remain unavailable: model output failed bounded checks. App-side prompt/Deep updates are local only; no Cloudflare deployment requested.
+
+## Current request — Deep engine review and quality repair
+- [ ] Review Cloudflare and GitHub paths for request-contract and verification bugs.
+- [ ] Repair plan/writer conflicts, spoken-word repair, evidence and final approval gates; add focused regressions.
+- [ ] Upload verified runtime changes and run the exact Monkey/Rabbit brief in the authenticated app.
+- [ ] Independently grade the real output and inspect formatting/reload; report honest remaining limits.
