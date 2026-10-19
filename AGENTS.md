@@ -9,9 +9,10 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Read scoped `src/AGENTS.md` and `src/lib/AGENTS.md` before edits.
+- Read `src/AGENTS.md` and `src/lib/AGENTS.md` before edits.
+- Markdown boxes reuse rich callouts/flows and unframed tables in both views. Why: preserve structure.
 - File delivery uses `builder/file-delivery.ts`: success+artifacts before delivery, contents opt-in, JobCard fallback retry. Preserve server job-prefixed reply ids and merge jobs into those replies; matching content renders once. Why: no fake files or duplicate saved results.
-- Chat attachment Plugins uses one controlled Popover anchored to the composer, selecting via the plugin-chip callback. Why: picker stays above the input without navigation or duplicated send logic.
+- Chat attachment Plugins uses one controlled Popover anchored to the composer, selecting via the plugin-chip callback. Why: one anchored picker.
 - Credentials live only in Cloudflare Secrets/Variables or its Secrets Store, read at runtime, never in Lovable secrets. Why: Cloudflare is the credential source of truth.
 - GitHub CLI is only for `tkdasofficial/vision-runtime` provisioning, workflows, runtime and tests; never app source edits. Why: runtime and app source stay separate.
 
