@@ -180,3 +180,8 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [x] End-to-end completed with updated primary on 2026-10-18: Worked for 1123s, saved account-owned story.md, reopened chat and working download; no full PRD-compliance claim.
 - [x] Prompt worker: Nemotron 3 Super only, paced 40 req/min, 4 concurrent (Groq only on outage)
 - [ ] Prompt series: strict independent consistency score ≥90% (currently 55–65%) — waiting on user decision about writer model
+
+## Current request — Story runtime and structured inline delivery
+- [ ] Extract existing generation into workers/prompts/story/index.py without duplicating the pipeline.
+- [ ] Honor story-only, timed stories, scene prompts and requested grouping; hide internal plans and make files opt-in.
+- [ ] Test runtime, routing and delivery; verify the rendered result and report live-backend verification limits.
