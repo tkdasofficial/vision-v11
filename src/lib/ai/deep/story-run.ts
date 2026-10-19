@@ -71,6 +71,13 @@ export function renderStory(run: StoryRun, a: RequestAnalysis): string {
   const p = run.plan;
   if (!p) return "No story plan was approved.";
   const noun = a.items?.noun ?? "scene";
+  const boxed = !a.wantsJson && !a.instructions?.noHeadings && !/\b(?:plain text|no (?:markdown|boxes|fences))\b/i.test(run.request);
+  const grouped = /(?:each|every|per)[^.\n]{0,100}(?:markdown|box|block|prompt)[^.\n]{0,140}(?:all|details|visual|dialogue|character)/i.test(run.request);
+  const fence = (body: string) => {
+    const size = Math.max(3, ...Array.from(body.matchAll(/`{3,}/g), (m) => m[0].length)) + 1;
+    const marker = "`".repeat(size);
+    return `${marker}markdown\n${body}\n${marker}`;
+  };
   const text = p.manifest
     .filter((c) => run.scenes[c.id])
     .map((c) => {
@@ -88,7 +95,9 @@ export function renderStory(run: StoryRun, a: RequestAnalysis): string {
               ? `Dialogue: ${s.dialogue.map((d) => `${p.blueprint.entities.find((e) => e.id === d.characterId)?.name ?? d.characterId}: ${d.line}`).join("\n")}`
               : `${f.charAt(0).toUpperCase() + f.slice(1)}: ${s[f]}`,
           );
-      return lines.filter(Boolean).join("\n\n");
+      if (!boxed) return lines.filter(Boolean).join("\n\n");
+      if (grouped) return fence(lines.filter(Boolean).join("\n\n"));
+      return [lines[0], ...lines.slice(1).filter(Boolean).map((line, index) => fence(index === 0 ? `### Story Line\n\n${line}` : line))].filter(Boolean).join("\n\n");
     })
     .join("\n\n");
   return text;

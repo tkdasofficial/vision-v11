@@ -180,3 +180,9 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [x] End-to-end completed with updated primary on 2026-10-18: Worked for 1123s, saved account-owned story.md, reopened chat and working download; no full PRD-compliance claim.
 - [x] Prompt worker: Nemotron 3 Super only, paced 40 req/min, 4 concurrent (Groq only on outage)
 - [ ] Prompt series: strict independent consistency score ≥90% (currently 55–65%) — waiting on user decision about writer model
+
+## Current request — Story runtime and structured inline delivery
+- [x] Extract existing generation into workers/prompts/story/index.py without duplicating the pipeline; runtime main updated at 734aa2d.
+- [x] Honor story-only, timed stories, scene prompts and requested grouping; hide internal plans and make files opt-in in app finalization.
+- [x] Test runtime (56 passed), app routing/delivery/continuity (121 passed), and actual runtime-assembled output through JobCard (6 boxes, structured table/callout, no automatic attachment, no page errors).
+- [ ] Verify a newly generated authenticated chat end-to-end using updated Cloudflare finalization — blocked: app backend changes require deployment, not requested this turn. Browser verification used assembled runtime output, not a live AI generation; no accuracy or 90% quality claim.

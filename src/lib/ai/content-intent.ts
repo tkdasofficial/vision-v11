@@ -52,7 +52,7 @@ export function detectContentIntent(text: string, previousText?: string): Intent
   }
   if (asking && !create && !transform) return { intent: "general", rawMarkdown };
   if (transform && !EXPLAIN.test(own)) return { intent: "deliverable", category: category ?? "rewrite", rawMarkdown, single: isSingle(own) };
-  if (create && category) return { intent: "deliverable", category, rawMarkdown, single: isSingle(own) };
+  if (create && category) return { intent: "deliverable", category, rawMarkdown, single: category === "story" || category === "prompt" ? false : isSingle(own) };
   return { intent: "general", rawMarkdown };
 }
 
@@ -62,6 +62,9 @@ function isSingle(text: string) { return !MANY.test(text); }
 
 /** System-prompt addendum for the detected intent (appended to the existing mode prompt). */
 export function intentAddendum(r: IntentResult): string {
+  if (r.intent === "deliverable" && (r.category === "story" || r.category === "prompt")) {
+    return `\n\nStory/prompt deliverable: output only the requested content, with no blueprint or planning details. A story title is simple text outside the boxes; the full story has its own ${r.rawMarkdown ? "text" : "markdown"} fence. Each requested scene component (story line, visual prompt, dialogue, characters, sound effects, etc.) gets its own structured fence by default. If the user asks for all details in each scene's prompt box, group those sections into one fence per scene instead. Explicit content and format instructions win; do not add a story to a prompts-only request. Never repeat the content outside its box. Do not offer a file unless requested.`;
+  }
   if (r.intent === "deliverable" && r.single) {
     return `\n\nCopy-ready deliverable: the user wants one piece of reusable ${r.category} content to copy, send, publish or paste elsewhere. Reply with ONLY the finished deliverable itself — no introduction, no closing remarks, no notes, no alternatives, and no code fences around it: the app places your whole reply in a copy box. ${r.rawMarkdown ? "Write it as literal Markdown source." : "Use Markdown structure only where it suits the content (title, headings, lists, emphasis); don't force headings."} For translations or rewrites output only the new version, not the original. Respect every stated constraint (language, word/line/scene counts, names, tone, required headings) and count before replying.`;
   }
