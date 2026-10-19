@@ -48,6 +48,15 @@ describe("file-only delivery policy", () => {
 });
 
 describe("delivered results", () => {
+  it("shows story content inline without an automatic attachment", () => {
+    render(<JobCard job={job("Write a story", { type: "runtime_task", result: { operation: "story_generate", content: "The rain stopped." } })} />);
+    expect(screen.getByText("The rain stopped.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Download story.pdf" })).toBeNull();
+  });
+  it("shows an explicitly requested story attachment", () => {
+    render(<JobCard job={job("Write a story and give a file", { type: "runtime_task", result: { operation: "story_generate", fileRequested: true, content: "The rain stopped." } })} />);
+    expect(screen.getByRole("button", { name: "Download story.pdf" })).toBeTruthy();
+  });
   it("delivers the download without exposing the stored body", () => {
     render(<JobCard job={job("Create a PDF of the story")} />);
     expect(screen.getByRole("button", { name: "Download story.pdf" })).toBeTruthy();

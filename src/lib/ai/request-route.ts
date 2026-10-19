@@ -53,6 +53,7 @@ export function routeRequest(content: string, mode: ChatMode = "default"): Reque
   if (excel) return { kind: "file", format: "xlsx" };
   // Multi-scene story/prompt generation runs on the background runtime (it exceeds the
   // front-end Workers CPU budget): a counted set of scenes/chapters/episodes for a story.
+  if (/\b(?:write|create|generate|make)\b/i.test(content) && /\bstory\b/i.test(content) && /\b\d+\s*[- ]?(?:seconds?|secs?|minutes?|mins?)\b/i.test(content) && /\b(?:all|every)\s+(?:the\s+)?scenes?\b/i.test(content) && /\bprompts?\b/i.test(content)) return { kind: "story" };
   if (/\b\d{1,2}\s*(?:detailed\s*|sequential\s*|separate\s*|distinct\s*|,\s*)*\b(?:scene|chapter|episode|part)s?\b/i.test(content)
     && /\b(?:story|scene[- ]generation\s+prompts?|screenplay|narrative)\b/i.test(content)
     && /\b(?:generate|write|create|produce|craft|develop)\b/i.test(content)) return { kind: "story" };
