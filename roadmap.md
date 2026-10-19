@@ -189,7 +189,7 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 
 ## Current request — Monkey/Rabbit requirement verification
 - [x] Signed in and inspected latest chat e84205fb: independent clarified-requirement score 46/100; all ten dialogues under 25 words, extra output, clothing removal in scene 9 and outdoor background in scene 10.
-- [x] Ran exact clarified request in chat 5bb9bed8: old runtime version 4 marked it 100%, but real output contains extra story/sections, home/classroom changes and swapped clothing. This score is not trusted.
+- [x] Ran exact clarified request in chat 5bb9bed8: old runtime version 4 marked it 100%, but independent review rates it 55/100: four dialogues exceed 30 words, extra sections, changed backgrounds and shirt transfer in scene 10. Model score is not trusted.
 - [x] Fixed explicit two-field selection, separate grouping, blocking dialogue ranges, fixed-background plan gates, hidden ledger; GitHub runtime pushed at 3e4f8696. 61 runtime and 106 app regression tests passed, one skipped; automatic build OK.
 - [x] Reran through signed-in app at chat 450e0441: failed after 522s; stored error says consistency 85%, below 90%. No approved output to rate; never claimed success.
 - [ ] Approved new result and independent ≥90% rating remain unavailable: model output failed bounded checks. App-side prompt/Deep updates are local only; no Cloudflare deployment requested.
