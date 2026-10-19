@@ -1,7 +1,7 @@
 import type { ModelCall, ChatMsg } from "./pipeline";
 import type { RequestAnalysis } from "./analyze";
 import { validateCandidate } from "./validators";
-import { requestedStoryFields } from "../story-output";
+import { requestedStoryFields, storyDialogueRange, spokenStoryWords, requiresFixedStoryBackground } from "../story-output";
 import {
   storyPlanSchema,
   sceneSchema,
@@ -90,7 +90,7 @@ export function renderStory(run: StoryRun, a: RequestAnalysis): string {
           : `## ${noun.charAt(0).toUpperCase() + noun.slice(1)} ${c.order}`,
         !requested.length || requested.includes("action") ? s.action : "",
       ];
-      for (const f of c.fields)
+      for (const f of requested.length ? requested as typeof c.fields : c.fields)
         if (f !== "action" && (!requested.length || requested.includes(f)))
           lines.push(
             f === "dialogue"
@@ -163,7 +163,7 @@ export async function runStructuredStory(o: {
       if (now() - start >= budgetMs)
         throw new Error("Story time budget reached; approved scenes remain saved.");
       const msgs: ChatMsg[] = [
-        { role: "system", content: `${o.system}\n\n${system}` },
+        { role: "system", content: `${o.system}\n\n${system}\nSpoken dialogue ranges apply only to dialogue[].line, excluding speaker labels and delivery notes. Visual text and internal action do not count. All immutable clothing/background requirements must appear correctly in visible visual content, not only in canonicalFacts.` },
         { role: "user", content: JSON.stringify({ conversationContext: o.context ?? [], ...(payload as Record<string, unknown>) }) },
       ];
       const ctx = budgetStoryMessages(msgs, o.adapter);
@@ -184,6 +184,14 @@ export async function runStructuredStory(o: {
     }
   };
   const count = o.analysis.items?.count ?? 0;
+  const requested = requestedStoryFields(o.request);
+  const dialogueRange = storyDialogueRange(o.request);
+  const sceneRequirements = (scene: StoryScene): StoryIssue[] => {
+    const words = spokenStoryWords(scene.dialogue.map((turn) => turn.line));
+    return dialogueRange && (words < dialogueRange.min || words > dialogueRange.max)
+      ? [{ ...fail(scene.id, `Dialogue has ${words} spoken words; required ${dialogueRange.min}–${dialogueRange.max} per scene.`), category: "dialogue", reference: "spoken-word-range" }]
+      : [];
+  };
   try {
     if (!run.plan) {
       o.progress?.("planning");
@@ -194,7 +202,11 @@ export async function runStructuredStory(o: {
             await call(PLAN, { request: o.request, count, issues }),
             storyPlanSchema,
           );
+          // Delivery fields are mandatory, not discretionary planner choices.
+          if (requested.length) for (const contract of p.manifest) contract.fields = requested as typeof contract.fields;
           issues = validateStoryPlan(p, count);
+          if (requiresFixedStoryBackground(o.request) && new Set(p.manifest.map((c) => c.locationId)).size !== 1)
+            issues.push({ ...fail("plan", "The background must remain in one fixed location in all scenes."), category: "continuity" });
           if (!critical(issues)) {
             const r = parseStoryJson(
               await call(
@@ -241,6 +253,7 @@ export async function runStructuredStory(o: {
           r = run.reviews[c.id],
           checks = [
             ...v.issues,
+            ...sceneRequirements(s),
             ...(r ? reviewIssues(r, c.id) : [fail(c.id, "Independent review unavailable")]),
           ];
         if (critical(checks)) {
@@ -293,7 +306,7 @@ export async function runStructuredStory(o: {
           };
           candidate = parseStoryJson(await call(SCENE, ctx), sceneSchema);
           const v = validateScene(p, c, candidate, state);
-          findings = v.issues;
+          findings = [...v.issues, ...sceneRequirements(candidate)];
           let review: StoryReview | undefined;
           if (!critical(findings)) {
             o.progress?.("verifying");
@@ -353,7 +366,7 @@ export async function runStructuredStory(o: {
       run.audit = audit;
       const issues = reviewIssues(audit, "global");
       issues.push(
-        ...validateCandidate(renderStory(run, o.analysis), o.analysis).map((i) => ({
+        ...validateCandidate(renderStory(run, o.analysis), dialogueRange && o.analysis.instructions ? { ...o.analysis, instructions: { ...o.analysis.instructions, words: null } } : o.analysis).map((i) => ({
           ...fail(
             i.items?.length ? (p.manifest[(i.items[0] ?? 1) - 1]?.id ?? "global") : "global",
             i.message,
