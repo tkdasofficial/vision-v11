@@ -199,3 +199,10 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [x] Repaired genre-aware planning, dialogue-only bounded repair, unverified extraction blocking, actual-evidence checks, failed-check blocking, chosen-checkpoint rollback; added Cloudflare spoken-word/requested-field and delivered-artifact gates, empty-reply-safe persistence.
 - [x] Runtime now pushed 252d3cef; 54 runtime tests pass. App regressions: 122 passed, one skipped; automatic build OK. Live signed-in runs: 5da9b835 failed at 366s (32 spoken words), 92574a59 failed at 148s (fixed-background plan), c142cb99 failed at 255s (fixed-background plan). Added validated word-array repairs and room-vs-seat correction; the last run used 0521a11c, latest 252d3cef only adds restored outside-position regression.
 - [ ] Approved output and independent ≥90% rating: blocked by model plans still violating fixed background after bounded repairs. No final text was delivered, so quality cannot be rated; no generation is left running. App-side changes remain undeployed (not authorized this turn).
+
+## Approved plan — Shared validators and story reliability
+- [ ] Extract reusable root Python validators and integrate plan/scene/final gates with targeted repairs and budgets.
+- [ ] Add versioned Cloudflare contract/report checks, fix output counting and protect relay mutations.
+- [ ] Test repair application, canonical rooms, lifecycle races and existing story/format regressions.
+- [ ] Durable owner-private cross-run checkpoints and interrupted-delivery reconciliation.
+- [ ] Deploy and verify three authenticated live passes with independent ≥90% reviews — requires explicit deployment/workflow authorization.
