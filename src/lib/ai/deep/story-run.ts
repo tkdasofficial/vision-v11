@@ -1,6 +1,7 @@
 import type { ModelCall, ChatMsg } from "./pipeline";
 import type { RequestAnalysis } from "./analyze";
 import { validateCandidate } from "./validators";
+import { requestedStoryFields } from "../story-output";
 import {
   storyPlanSchema,
   sceneSchema,
@@ -72,7 +73,8 @@ export function renderStory(run: StoryRun, a: RequestAnalysis): string {
   if (!p) return "No story plan was approved.";
   const noun = a.items?.noun ?? "scene";
   const boxed = !a.wantsJson && !a.instructions?.noHeadings && !/\b(?:plain text|no (?:markdown|boxes|fences))\b/i.test(run.request);
-  const grouped = /(?:each|every|per)[^.\n]{0,100}(?:markdown|box|block|prompt)[^.\n]{0,140}(?:all|details|visual|dialogue|character)/i.test(run.request);
+  const grouped = /(?:each|every|per)[^.\n]{0,100}(?:markdown\s+(?:box|block)|box|block)[^.\n]{0,140}(?:all|details|visual|dialogue|character)|(?:each|every|per)\s+(?:visual\s+)?prompt[^.\n]{0,60}(?:has|have|contains|includes)[^.\n]{0,80}(?:all|details|dialogue|character)/i.test(run.request);
+  const requested = requestedStoryFields(run.request);
   const fence = (body: string) => {
     const size = Math.max(3, ...Array.from(body.matchAll(/`{3,}/g), (m) => m[0].length)) + 1;
     const marker = "`".repeat(size);
@@ -86,10 +88,10 @@ export function renderStory(run: StoryRun, a: RequestAnalysis): string {
         a.instructions?.noHeadings
           ? ""
           : `## ${noun.charAt(0).toUpperCase() + noun.slice(1)} ${c.order}`,
-        s.action,
+        !requested.length || requested.includes("action") ? s.action : "",
       ];
       for (const f of c.fields)
-        if (f !== "action")
+        if (f !== "action" && (!requested.length || requested.includes(f)))
           lines.push(
             f === "dialogue"
               ? `Dialogue: ${s.dialogue.map((d) => `${p.blueprint.entities.find((e) => e.id === d.characterId)?.name ?? d.characterId}: ${d.line}`).join("\n")}`
@@ -97,7 +99,7 @@ export function renderStory(run: StoryRun, a: RequestAnalysis): string {
           );
       if (!boxed) return lines.filter(Boolean).join("\n\n");
       if (grouped) return fence(lines.filter(Boolean).join("\n\n"));
-      return [lines[0], ...lines.slice(1).filter(Boolean).map((line, index) => fence(index === 0 ? `### Story Line\n\n${line}` : line))].filter(Boolean).join("\n\n");
+      return [lines[0], ...lines.slice(1).map((line, index) => line ? fence(index === 0 ? `### Story Line\n\n${line}` : line) : "")].filter(Boolean).join("\n\n");
     })
     .join("\n\n");
   return text;

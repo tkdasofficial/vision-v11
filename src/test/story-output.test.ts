@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { wantsStoryFile } from "@/lib/ai/story-output";
+import { wantsStoryFile, requestedStoryFields } from "@/lib/ai/story-output";
 import { routeRequest } from "@/lib/ai/request-route";
 import { detectContentIntent } from "@/lib/ai/content-intent";
 import { renderStory, type StoryRun } from "@/lib/ai/deep/story-run";
@@ -7,6 +7,9 @@ import { analyzeRequest } from "@/lib/ai/deep/analyze";
 import { storyFixture, sceneFixture } from "./fixtures/story-prd";
 
 describe("story delivery rules", () => {
+  it("selects only visual prompt and dialogue from explicit delivery, not input characters", () => {
+    expect(requestedStoryFields("Create a story of 10 scenes, each scene have 25 to 30 words dialogue, and give me both visual prompt & dialogue of each scenes. Characters: A Monkey and A Rabbit. Theme: School & Homework.")).toEqual(["visual", "dialogue"]);
+  });
   const render = (request: string) => {
     const plan = storyFixture(1);
     plan.manifest[0].fields = ["action", "visual", "dialogue"];
@@ -18,6 +21,12 @@ describe("story delivery rules", () => {
   });
   it("groups all requested Deep scene details when requested", () => {
     expect(render("Write 1 scene; each markdown block has all details").match(/````markdown/g)).toHaveLength(1);
+  });
+  it("delivers two separate components without extra story lines for the requested pair", () => {
+    const result = render("Create a story of 1 scene and give me both visual prompt & dialogue of each scenes.");
+    expect(result.match(/````markdown/g)).toHaveLength(2);
+    expect(result).not.toContain("Ari walks forward");
+    expect(result).toContain("Ari holds a red lantern.");
   });
   it("honors explicit plain-text overrides in Deep", () => {
     expect(render("Write 1 scene in plain text")).not.toContain("````markdown");
