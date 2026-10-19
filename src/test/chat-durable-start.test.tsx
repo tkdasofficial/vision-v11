@@ -1,16 +1,27 @@
 import { act, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-const db = vi.hoisted(() => ({ user: { id: "owner" }, events: [] as string[], release: (() => {}) as () => void }));
+const db = vi.hoisted(() => ({ user: { id: "owner" }, events: [] as string[], rows: [] as any[], release: (() => {}) as () => void }));
 vi.mock("@/context/AuthContext", () => ({ useAuth: () => ({ user: db.user }) }));
 vi.mock("@/lib/idb-cache", () => ({ idbGet: async () => null, idbSet: async () => {}, idbDelete: async () => {}, idbClear: async () => {} }));
 vi.mock("@/lib/cloud/client", () => ({ supabase: { from: (table: string) => ({
   select: () => ({ order: () => ({ limit: async () => ({ data: [], error: null }) }) }),
   insert: () => new Promise((resolve) => { db.release = () => { db.events.push("session-saved"); resolve({ error: null }); }; }),
-  upsert: async (rows: any[]) => { db.events.push(`${table}:${rows[0].content}`); return { error: null }; },
+  upsert: async (rows: any[]) => { db.rows = rows; db.events.push(`${table}:${rows[0].content}`); return { error: null }; },
   update: () => ({ eq: async () => ({ error: null }) }),
 }) } }));
 import { ChatHistoryProvider, useChatHistory } from "@/context/ChatHistoryContext";
 describe("durable question before background dispatch", () => {
+  it("reuses the server runtime reply id instead of saving a second copy", async () => {
+    let api: ReturnType<typeof useChatHistory> | undefined;
+    function Probe() { api = useChatHistory(); return null; }
+    render(<ChatHistoryProvider><Probe /></ChatHistoryProvider>);
+    await act(async () => {});
+    if (!api) throw new Error("Missing context");
+    const current = api;
+    const id = "job-7c7e4c9d-dd26-483f-93c2-406cf267d41f";
+    await act(async () => { await current.persistChatMessages("existing", [{ id, role: "assistant", content: "Saved scene prompts", timestamp: new Date() }]); });
+    expect(db.rows.map((r) => r.id)).toEqual([id]);
+  });
   it("an immediate deletion clears the older queued answer so reload cannot restore it", async () => {
     vi.useFakeTimers();
     db.events.length = 0;

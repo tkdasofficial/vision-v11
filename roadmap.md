@@ -1,5 +1,10 @@
 # Roadmap — Memory, Output Control, Artifacts & Activity Tracking
 
+## Current request — Repeated prompts in chats
+- [x] Signed in and inspected latest six chats: repeated Recent titles are separate test runs, each with one user prompt; newest result has duplicate saved copies and a separate restored job.
+- [x] Preserve runtime reply ids and merge saved result/job into one reply; no chat deletion, provider change or deployment.
+- [x] 43 targeted regressions passed; automatic build OK. Signed-in newest chat shows one blueprint, one status and one reply footer before/after reload, no page errors; screenshot inspected. Existing separate test chats retained; no deployment.
+
 ## Current request — Upgrade story scripts and generation pipelines
 - [x] Strengthened conversation canon, full-outline scene context, nonempty transition evidence, blocking review failures and two-scene continuity checks; GitHub runtime adds causal contracts, validated persistent story state, bounded scene repair, original-count rejection and final audit. Models unchanged.
 - [x] App regression suite: 1,487 passed, one skipped; runtime story/operations: 31 passed. Updated vision-runtime main at 836b2477b1dfa9e9385cc6489de50a75a9e21a29; GitHub verification pending at run 39132284655.

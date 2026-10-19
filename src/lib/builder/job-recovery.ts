@@ -6,11 +6,13 @@ import { isTerminal, type JobView } from "./statuses";
 export function mergeChatJobs(messages: ChatMessage[], jobs: JobView[]): ChatMessage[] {
   const byId = new Map(jobs.map((job) => [job.id, job]));
   const result = messages.map((message) => {
-    const latest = message.job && byId.get(message.job.id);
+    // Server-saved runtime replies and restored jobs share one durable identity.
+    const latest = byId.get(message.job?.id ?? (message.id.startsWith("job-") ? message.id.slice(4) : ""));
     if (!latest || message.archivedJob) return message;
     byId.delete(latest.id);
     if (Date.parse(latest.updatedAt) < Date.parse(message.job?.updatedAt ?? "")) return message;
-    return { ...message, job: latest };
+    const content = typeof latest.result?.content === "string" && latest.result.content === message.content ? "" : message.content;
+    return { ...message, content, job: latest };
   });
   for (const job of byId.values()) result.push({
     id: `job-${job.id}`, role: "assistant", timestamp: new Date(job.createdAt), job,

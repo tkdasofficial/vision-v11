@@ -86,6 +86,8 @@ const getDateLabel = (ts: number): string => {
 
 /** Same local message id → same database row id, across remounts and reloads (prevents duplicate rows). */
 function stableRowId(sessionId: string, localId: string): string {
+  // Already a durable server row, not a temporary browser id.
+  if (/^job-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(localId)) return localId;
   let h = "";
   for (let seed = 0; seed < 4; seed++) {
     let x = 0x811c9dc5 ^ seed;
