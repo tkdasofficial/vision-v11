@@ -22,15 +22,15 @@ export async function prepareKeepAlive(
 }
 
 /**
- * Saves the finished reply under the id the browser uses for it. INSERT OR IGNORE: if the browser
- * already saved it, nothing changes; the session must belong to the caller.
+ * Saves under the browser's reply id. Only an owned empty placeholder may be
+ * replaced on conflict; an existing nonempty reply is never overwritten.
  */
 export async function saveReply(userId: string, chatId: string | undefined, replyId: string, content: string, meta: Record<string, unknown> = {}) {
   if (!chatId || !content.trim() || !/^[\w-]{8,64}$/.test(replyId)) return;
   try {
     const { d1 } = await import("@/lib/cloud/d1.server");
     await d1(
-      "INSERT OR IGNORE INTO chat_messages (id, session_id, role, content, metadata, created_at) SELECT ?, id, 'assistant', ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM chat_sessions WHERE id = ? AND user_id = ?",
+      "INSERT INTO chat_messages (id, session_id, role, content, metadata, created_at) SELECT ?, id, 'assistant', ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM chat_sessions WHERE id = ? AND user_id = ? ON CONFLICT(id) DO UPDATE SET content = excluded.content, metadata = excluded.metadata WHERE chat_messages.session_id = excluded.session_id AND chat_messages.role = 'assistant' AND TRIM(chat_messages.content) = ''",
       [replyId, content, JSON.stringify({ ...meta, background: true }), chatId, userId],
     );
     await d1("UPDATE chat_sessions SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND user_id = ?", [chatId, userId]);

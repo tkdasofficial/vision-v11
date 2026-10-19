@@ -4,6 +4,7 @@ import { d1 } from "@/lib/cloud/d1.server";
 import { JobRun, ARTIFACT_TTL_MS, safeError } from "@/lib/jobs/jobs.server";
 import { RUNTIME_OPS, RUNTIME_LIMITS, cleanParams, outputMatches, outputName, TARGET_MIME, type RuntimeOpId } from "./operations";
 import { wantsStoryFile } from "@/lib/ai/story-output";
+import { validateRuntimeStory } from "./story-validation";
 
 const now = () => new Date().toISOString();
 
@@ -178,6 +179,11 @@ async function finalize(job: JobRun, rt: any) {
     const isPrompts = rt.operation === "prompt_generate";
     const text = new TextDecoder().decode(bytes);
     if (text.trim().length < (isPrompts ? 200 : 500)) { await deleteArtifactBytes(rt.output_key).catch(() => undefined); throw new Error("The generated story is incomplete."); }
+    const contractIssues = validateRuntimeStory(text, String(params.prompt ?? ""));
+    if (contractIssues.length) {
+      await deleteArtifactBytes(rt.output_key).catch(() => undefined);
+      throw new Error(`The generated content did not meet the request: ${contractIssues.slice(0, 5).join(" ")}`);
+    }
     const fileRequested = wantsStoryFile(String(params.prompt ?? ""));
     await job.step("saving", "Saving the generated reply");
     const name = (typeof rt.output_name === "string" && rt.output_name.endsWith(".md")) ? rt.output_name : isPrompts ? "prompts.md" : "story.md";
