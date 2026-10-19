@@ -2,7 +2,7 @@
 
 ## Current request — Structured output inside Markdown
 - [x] Enable callouts, flows, tables and safe links in Markdown boxes and expanded view.
-- [ ] Run focused regressions and verify display.
+- [x] 88 focused tests passed; automatic build OK. Browser fixture renders callout, table, flow, checklist and math; expanded rows preserved, screenshot inspected, no page errors. No new AI generation or deployment.
 
 ## Current request — Repeated prompts in chats
 - [x] Signed in and inspected latest six chats: repeated Recent titles are separate test runs, each with one user prompt; newest result has duplicate saved copies and a separate restored job.
