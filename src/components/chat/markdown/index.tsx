@@ -1,5 +1,5 @@
-import { useRef, useState, type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
+import { Children, isValidElement, useRef, useState, type ReactNode } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import remarkMath from "remark-math";
@@ -13,6 +13,8 @@ import { useCopy } from "@/components/chat/use-copy";
 import { downloadText } from "@/lib/code-files";
 import { markdownToPlainText } from "@/lib/markdown-plain";
 
+import { Callout, FlowDiagram, remarkCallouts, CALLOUT_TYPES, type CalloutType } from "@/components/chat/rich-blocks";
+
 type Props = { markdown: string; label?: string; renderCode?: (code: string, language: string) => ReactNode };
 
 /** Markdown copy box: rendered text only (no raw markers), every source line on its own line.
@@ -23,7 +25,26 @@ export default function MarkdownBlock({ markdown, label = "Markdown", renderCode
   const body = useRef<HTMLDivElement>(null);
   const plain = markdownToPlainText(markdown);
   const copyHtml = () => body.current?.innerHTML;
-  const render = () => <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]} rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore" }]]} components={renderCode ? { pre: ({ children }) => { const c: any = Array.isArray(children) ? children[0] : children; const lang = String(c?.props?.className ?? "").replace(/^language-/, ""); return <>{renderCode(String(c?.props?.children ?? "").replace(/\n$/, ""), lang)}</>; } } : undefined}>{normalizeMath(markdown)}</ReactMarkdown>;
+  const components: Components = {
+    pre: ({ children }) => {
+      const child = Children.toArray(children).find(isValidElement);
+      if (!isValidElement<{ children?: ReactNode; className?: string }>(child)) return <pre>{children}</pre>;
+      const lang = (child.props.className ?? "").replace(/^language-/, "").toLowerCase();
+      const source = String(child.props.children ?? "").replace(/\n$/, "");
+      if (["flow", "steps", "pipeline"].includes(lang)) return <FlowDiagram source={source} />;
+      return renderCode ? <>{renderCode(source, lang)}</> : <pre>{children}</pre>;
+    },
+    blockquote: ({ children, node }) => {
+      const type = String(node?.properties?.dataCallout ?? node?.properties?.["data-callout"] ?? "") as CalloutType;
+      return CALLOUT_TYPES.includes(type) ? <Callout type={type}>{children}</Callout> : <blockquote>{children}</blockquote>;
+    },
+    table: ({ children }) => <div className="my-4 max-w-full overflow-x-auto"><table className="w-full border-collapse text-sm [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2">{children}</table></div>,
+    a: ({ children, href }) => {
+      if (!href || !/^(https?:|mailto:|#|\/)/i.test(href.trim())) return <span>{children}</span>;
+      return <a href={href} target={href.startsWith("#") ? undefined : "_blank"} rel="noopener noreferrer nofollow" className="text-primary underline underline-offset-2">{children}</a>;
+    },
+  };
+  const render = () => <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCallouts]} rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore" }]]} components={components}>{normalizeMath(markdown)}</ReactMarkdown>;
   const lines = markdown.split("\n").length;
 
   return (

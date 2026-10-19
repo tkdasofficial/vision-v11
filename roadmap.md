@@ -1,5 +1,9 @@
 # Roadmap — Memory, Output Control, Artifacts & Activity Tracking
 
+## Current request — Structured output inside Markdown
+- [x] Enable callouts, flows, tables and safe links in Markdown boxes and expanded view.
+- [ ] Run focused regressions and verify display.
+
 ## Current request — Repeated prompts in chats
 - [x] Signed in and inspected latest six chats: repeated Recent titles are separate test runs, each with one user prompt; newest result has duplicate saved copies and a separate restored job.
 - [x] Preserve runtime reply ids and merge saved result/job into one reply; no chat deletion, provider change or deployment.
