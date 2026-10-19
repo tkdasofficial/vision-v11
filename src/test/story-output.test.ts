@@ -10,7 +10,7 @@ describe("story delivery rules", () => {
   const render = (request: string) => {
     const plan = storyFixture(1);
     plan.manifest[0].fields = ["action", "visual", "dialogue"];
-    const run: StoryRun = { requestId: "test", request, plan, scenes: { S1: sceneFixture("S1") }, snapshots: {}, reviews: {}, versions: [], repairs: [], calls: [], issues: [], status: "passed", updatedAt: 0 };
+    const run: StoryRun = { requestId: "test", request, plan, scenes: { S1: sceneFixture("S1") }, snapshots: {}, reviews: {}, versions: [], repairs: [], calls: [], issues: [], status: "passed", updatedAt: 0, configuration: { maxRepairs: 2, budgetMs: 600000 } };
     return renderStory(run, analyzeRequest(request));
   };
   it("separates the three requested Deep scene components", () => {

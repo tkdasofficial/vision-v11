@@ -182,6 +182,7 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [ ] Prompt series: strict independent consistency score ≥90% (currently 55–65%) — waiting on user decision about writer model
 
 ## Current request — Story runtime and structured inline delivery
-- [ ] Extract existing generation into workers/prompts/story/index.py without duplicating the pipeline.
-- [ ] Honor story-only, timed stories, scene prompts and requested grouping; hide internal plans and make files opt-in.
-- [ ] Test runtime, routing and delivery; verify the rendered result and report live-backend verification limits.
+- [x] Extract existing generation into workers/prompts/story/index.py without duplicating the pipeline; runtime main updated at 734aa2d.
+- [x] Honor story-only, timed stories, scene prompts and requested grouping; hide internal plans and make files opt-in in app finalization.
+- [x] Test runtime (56 passed), app routing/delivery/continuity (121 passed), and actual runtime-assembled output through JobCard (6 boxes, structured table/callout, no automatic attachment, no page errors).
+- [ ] Verify a newly generated authenticated chat end-to-end using updated Cloudflare finalization — blocked: app backend changes require deployment, not requested this turn. Browser verification used assembled runtime output, not a live AI generation; no accuracy or 90% quality claim.
