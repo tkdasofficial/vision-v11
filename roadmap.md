@@ -195,7 +195,7 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [ ] Approved new result and independent ≥90% rating remain unavailable: model output failed bounded checks. App-side prompt/Deep updates are local only; no Cloudflare deployment requested.
 
 ## Current request — Deep engine review and quality repair
-- [ ] Review Cloudflare and GitHub paths for request-contract and verification bugs.
-- [ ] Repair plan/writer conflicts, spoken-word repair, evidence and final approval gates; add focused regressions.
-- [ ] Upload verified runtime changes and run the exact Monkey/Rabbit brief in the authenticated app.
+- [x] Reviewed both paths: wrong-field counting, optional requested fields, forced mysteries, metadata-based evidence, failed-check/score conflicts, unsafe checkpoint acceptance and empty-reply race.
+- [x] Repaired genre-aware planning, dialogue-only bounded repair, unverified extraction blocking, actual-evidence checks, failed-check blocking, chosen-checkpoint rollback; added Cloudflare spoken-word/requested-field and delivered-artifact gates, empty-reply-safe persistence.
+- [x] Runtime pushed b54079ce; 49 runtime tests and 84 focused app tests passed. Exact signed-in Monkey/Rabbit task submitted as chat 5da9b835; awaiting result.
 - [ ] Independently grade the real output and inspect formatting/reload; report honest remaining limits.

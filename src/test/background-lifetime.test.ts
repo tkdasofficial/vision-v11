@@ -40,6 +40,15 @@ describe("accepted work survives the client leaving", () => {
     expect(saved).toBe(true);
     expect(waitUntil).toHaveBeenCalledTimes(1);
   });
+  it("replaces only an owned empty assistant placeholder", async () => {
+    const { d1 } = await import("@/lib/cloud/d1.server");
+    vi.mocked(d1).mockResolvedValue([]);
+    await saveReply("owner", "chat-1234", "job-12345678", "finished story");
+    const sql = vi.mocked(d1).mock.calls.find(([query]) => query.includes("ON CONFLICT"))?.[0] ?? "";
+    expect(sql).toContain("chat_messages.session_id = excluded.session_id");
+    expect(sql).toContain("TRIM(chat_messages.content) = ''");
+    expect(sql).toContain("chat_messages.role = 'assistant'");
+  });
   it("never reports success when the final reply could not be saved", async () => {
     const { d1 } = await import("@/lib/cloud/d1.server");
     vi.mocked(d1).mockRejectedValueOnce(new Error("storage unavailable"));
