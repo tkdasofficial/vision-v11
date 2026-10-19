@@ -366,14 +366,13 @@ export async function runStructuredStory(o: {
       run.audit = audit;
       const issues = reviewIssues(audit, "global");
       issues.push(
-        ...validateCandidate(renderStory(run, o.analysis), dialogueRange && o.analysis.instructions ? { ...o.analysis, instructions: { ...o.analysis.instructions, words: null } } : o.analysis).map((i) => ({
-          ...fail(
-            i.items?.length ? (p.manifest[(i.items[0] ?? 1) - 1]?.id ?? "global") : "global",
-            i.message,
-          ),
-          category: "instructions" as const,
-          reference: i.code,
-        })),
+        ...validateCandidate(renderStory(run, o.analysis), dialogueRange && o.analysis.instructions ? { ...o.analysis, instructions: { ...o.analysis.instructions, words: null } } : o.analysis).flatMap((i) =>
+          (i.items?.length ? i.items.map((item) => p.manifest[item - 1]?.id ?? "global") : ["global"]).map((sceneId) => ({
+            ...fail(sceneId, i.message),
+            category: "instructions" as const,
+            reference: i.code,
+          })),
+        ),
       );
       if (!critical(issues)) {
         run.status = "passed";
@@ -415,7 +414,7 @@ export async function runStructuredStory(o: {
             ),
             reviewSchema,
           ),
-          findings = [...v.issues, ...reviewIssues(r, c.id)];
+          findings = [...v.issues, ...sceneRequirements(s), ...reviewIssues(r, c.id)];
         if (!critical(findings)) {
           run.snapshots[c.id] = v.candidate;
           run.reviews[c.id] = r;
