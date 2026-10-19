@@ -186,3 +186,10 @@ Spec: user-uploaded VISION memory/output/artifact/activity integration doc (5 ta
 - [x] Honor story-only, timed stories, scene prompts and requested grouping; hide internal plans and make files opt-in in app finalization.
 - [x] Test runtime (56 passed), app routing/delivery/continuity (121 passed), and actual runtime-assembled output through JobCard (6 boxes, structured table/callout, no automatic attachment, no page errors).
 - [ ] Verify a newly generated authenticated chat end-to-end using updated Cloudflare finalization — blocked: app backend changes require deployment, not requested this turn. Browser verification used assembled runtime output, not a live AI generation; no accuracy or 90% quality claim.
+
+## Current request — Monkey/Rabbit requirement verification
+- [x] Signed in and inspected latest chat e84205fb: independent clarified-requirement score 46/100; all ten dialogues under 25 words, extra output, clothing removal in scene 9 and outdoor background in scene 10.
+- [x] Ran exact clarified request in chat 5bb9bed8: old runtime version 4 marked it 100%, but real output contains extra story/sections, home/classroom changes and swapped clothing. This score is not trusted.
+- [x] Fixed explicit two-field selection, separate grouping, blocking dialogue ranges, fixed-background plan gates, hidden ledger; GitHub runtime pushed at 3e4f8696. 61 runtime and 106 app regression tests passed, one skipped; automatic build OK.
+- [x] Reran through signed-in app at chat 450e0441: failed after 522s; stored error says consistency 85%, below 90%. No approved output to rate; never claimed success.
+- [ ] Approved new result and independent ≥90% rating remain unavailable: model output failed bounded checks. App-side prompt/Deep updates are local only; no Cloudflare deployment requested.
