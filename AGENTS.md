@@ -11,7 +11,7 @@
 
 - Read `src/AGENTS.md` and `src/lib/AGENTS.md` before edits.
 - Markdown boxes reuse rich callouts/flows and unframed tables in both views. Why: preserve structure.
-- Files use builder/file-delivery.ts; stories use ai/story-output.ts (files opt-in, durable reply before success). Preserve job-prefixed ids and merge matching results once. Why: no fake files, lost replies or duplicates.
+- Files use builder/file-delivery.ts; stories use ai/story-output.ts (explicit fields, opt-in files, durable replies). Preserve job-prefixed ids and merge matching results once. Why: no fake files, lost replies or duplicates.
 - Chat attachment Plugins uses one controlled Popover anchored to the composer, selecting via the plugin-chip callback. Why: one anchored picker.
 - Credentials live only in Cloudflare Secrets/Variables or its Secrets Store, read at runtime, never in Lovable secrets. Why: Cloudflare is the credential source of truth.
 - GitHub CLI is only for `tkdasofficial/vision-runtime` provisioning, workflows, runtime and tests; never app source edits. Why: runtime and app source stay separate.
